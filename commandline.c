@@ -47,6 +47,7 @@ static int getprop(transport_type transport, char* serial,  char* propname);
 static int startservice(transport_type transport, char* serial,  char* servicename);
 static int servicestatus(transport_type transport, char* serial,  char* servicename);
 static int stopservice(transport_type transport, char* serial,  char* servicename);
+static int run_settings(transport_type transport, char* serial);
 static int do_dmesg(transport_type transport, char* serial);
 //static int send_command(transport_type transport, char* serial,int argc, char** argv);
 static const char *gProductOutPath = NULL;
@@ -1428,6 +1429,9 @@ if(argc == 0) {
         status_window(ttype, serial);
         return 0;
     }
+    if(!strcmp(argv[0],"settings") ) {
+        return run_settings(ttype, serial);
+        }
     // logcat_type 0: normal 1: system  2: main 3: events 4: radio 5: all
     if(!strcmp(argv[0],"logcat-radio") || !strcmp(argv[0],"lcr")) {
         return logcat(ttype, serial, argc, argv,4);
@@ -1827,4 +1831,12 @@ static int do_dmesg(transport_type transport, char* serial)
     snprintf(buf, sizeof(buf), "shell:dmesg ");
     send_shellcommand(transport, serial, buf);    
     return 0;
+}
+static int  run_settings(transport_type transport, char* serial)
+{
+    char buf[256];
+    snprintf(buf, sizeof(buf), "shell:am start -a android.intent.action.MAIN -n com.android.settings/.Settings");
+    send_shellcommand(transport, serial, buf);    
+    return 0;
+    
 }

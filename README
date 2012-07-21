@@ -6,11 +6,25 @@ The majority of code changes are in commandline.c and adb_extended.c
 
 
 Shorthand Versions of shell commands:
+adb sh = adb shell
 adb dmesg = adb shell dmesg
 adb getprop = adb shell getprop
 adb svc-start = adb shell start
 adb svc-stop = adb shell stop
 ... plus many more
+
+Send Keyevents:
+You can send all keycodes by name to the device - this is a shortcut to
+adb shell input keyevent <key_code> 
+see input_keyevent_codes.c for full list. many of the key_codes have shortcut e.g
+adb menu = adb input keyevent 82
+adb home = adb input keyevent 3
+adb KEYCODE_MUSIC = adb input keyevent 209
+
+Start Activities:
+Currently only the settings activity can be started.
+adb settings = adb shell am start -a android.intent.action.MAIN -n com.android.settings/.Settings
+
 
 Building
 
