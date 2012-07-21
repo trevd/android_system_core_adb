@@ -1,0 +1,25 @@
+ADBX - An extended version of adb.
+
+Added Shortcut versions adb commands and adb shell commands
+
+The majority of code changes are in commandline.c and adb_extended.c
+
+
+Shorthand Versions of shell commands:
+adb dmesg = adb shell dmesg
+adb getprop = adb shell getprop
+adb svc-start = adb shell start
+adb svc-stop = adb shell stop
+... plus many more
+
+Building
+
+The easiest way to build this is from the aosp source tree.
+copy directory in the aosp root and run the following commands
+
+. build/envsetup.sh
+cd adbx
+mm
+
+
+
