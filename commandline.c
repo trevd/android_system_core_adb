@@ -74,12 +74,16 @@ void version(FILE * out) {
          ADB_VERSION_MAJOR, ADB_VERSION_MINOR, ADB_SERVER_VERSION);
 }
 void fullversion(FILE * out) {
-        version(out);
-        fprintf(out, "\tCooked for lazy love\n");
+    fprintf(out, "Android Debug Bridge Extended version %d.%d.%d.%d\n",
+         ADB_VERSION_MAJOR, ADB_VERSION_MINOR, ADB_SERVER_VERSION,ADB_EXTENDED_VERSION);
+
 }
-void help()
+void help_logcat()
 {
-    version(stderr);
+
+}
+void help_main()
+{
 
     fprintf(stderr,
         "\n"
@@ -154,6 +158,7 @@ void help()
         "  adb restore <file>           - restore device contents from the <file> backup archive\n"
         "\n"
         "  adb help                     - show this help message\n"
+        "  adb help all                 - show full extended version help message\n"
         "  adb version                  - show version num\n"
         "\n"
         "scripting:\n"
@@ -191,7 +196,17 @@ void help()
         "  ANDROID_LOG_TAGS             - When used with the logcat option, only these debug tags are printed.\n"
         );
 }
+void help_all()
+{
+   fullversion(stderr);
+   help_main();
 
+}
+void help()
+{
+    version(stderr);
+    help_main();
+}
 int usage()
 {
     help();
@@ -1388,6 +1403,20 @@ if(argc == 0) {
     }
 
     /* extended commands */
+    if(!strcmp(argv[0],"cat") ) {
+        if(argc == 1) return usage();
+        do_shellcommand(ttype, serial,"cat ",argv[1]);
+        return 0;
+        }
+    if(!strcmp(argv[0],"watchprop") || !strcmp(argv[0],"watchprops") || !strcmp(argv[0],"wp")) {
+       if ( argc == 1 )  
+                do_shellcommand(ttype, serial,"watchprops ",NULL);
+        else
+                do_shellcommand(ttype, serial,"watchprops ",argv[1]);
+        return 0;
+    }    
+    
+    
     if(!strcmp(argv[0],"getprop") || !strcmp(argv[0],"gp")) {
        if ( argc == 1 )  
                 do_shellcommand(ttype, serial,"getprop ",NULL);
@@ -1493,9 +1522,18 @@ if(argc == 0) {
 
     /* "adb /?" is a common idiom under Windows */
     if(!strcmp(argv[0], "help") || !strcmp(argv[0], "/?")) {
-        help();
+        if(argc == 1)
+                help();
+        else {
+                if(!strcmp(argv[1], "all"))
+                        help_all();
+                if(!strcmp(argv[1], "logcat"))
+                        help_logcat();
+        }
+        
         return 0;
     }
+    
 
     if(!strcmp(argv[0], "version") || !strcmp(argv[0], "ver")) {
         
