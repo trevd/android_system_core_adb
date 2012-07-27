@@ -1404,6 +1404,7 @@ if(argc == 0) {
         
         return 0;
     }
+
     if(!strcmp(argv[0],"svc-start") || !strcmp(argv[0],"st")) {
         if(argc == 1) return usage();
         do_shellcommand(ttype, serial,"start ",argv[1]);
