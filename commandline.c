@@ -43,12 +43,8 @@ void get_my_path(char *s, size_t maxLen);
 int find_sync_dirs(const char *srcarg,char **android_srcdir_out, char **data_srcdir_out);
 int install_app(transport_type transport, char* serial, int argc, char** argv);
 int uninstall_app(transport_type transport, char* serial, int argc, char** argv);
-static int getprop(transport_type transport, char* serial,  char* propname);
-static int startservice(transport_type transport, char* serial,  char* servicename);
-static int servicestatus(transport_type transport, char* serial,  char* servicename);
-static int stopservice(transport_type transport, char* serial,  char* servicename);
+static int do_shellcommand(transport_type transport, char* serial,char* shellcommand,char* argument);
 static int run_settings(transport_type transport, char* serial);
-static int do_dmesg(transport_type transport, char* serial);
 //static int send_command(transport_type transport, char* serial,int argc, char** argv);
 static const char *gProductOutPath = NULL;
 
@@ -1109,7 +1105,7 @@ if(argc == 0) {
                     
             }
             strcat(buf, "\"");
-        printf("String:%s",buf);        
+        //printf("String:%s",buf);        
         return send_shellcommand(ttype,serial,buf);
         
         }       
@@ -1227,7 +1223,9 @@ if(argc == 0) {
         }
     }
 
-    if(!strcmp(argv[0], "remount") || !strcmp(argv[0], "reboot")
+    if(!strcmp(argv[0], "remount") || !strcmp(argv[0], "reboot") 
+            || !strcmp(argv[0], "bootloader") || !strcmp(argv[0], "rbbl") || !strcmp(argv[0], "fastboot")
+            || !strcmp(argv[0], "reboot-recovery") || !strcmp(argv[0], "recovery")   
             || !strcmp(argv[0], "reboot-bootloader")
             || !strcmp(argv[0], "tcpip") || !strcmp(argv[0], "usb")
             || !strcmp(argv[0], "root")) {
@@ -1391,35 +1389,47 @@ if(argc == 0) {
 
     /* extended commands */
     if(!strcmp(argv[0],"getprop") || !strcmp(argv[0],"gp")) {
-        getprop(ttype, serial,argv[1]);
+       if ( argc == 1 )  
+                do_shellcommand(ttype, serial,"getprop ",NULL);
+        else
+                do_shellcommand(ttype, serial,"getprop ",argv[1]);
+        return 0;
+    }
+    if(!strcmp(argv[0],"ll")) {
+        
+        if ( argc == 1 )  
+                do_shellcommand(ttype, serial,"ls -l / ",NULL);
+        else
+                do_shellcommand(ttype, serial,"ls -l ",argv[1]);
+        
         return 0;
     }
     if(!strcmp(argv[0],"svc-start") || !strcmp(argv[0],"st")) {
         if(argc == 1) return usage();
-        startservice(ttype, serial,argv[1]);
+        do_shellcommand(ttype, serial,"start ",argv[1]);
         return 0;
     }
     if(!strcmp(argv[0],"svc-status") || !strcmp(argv[0],"ss")) {
         if(argc == 1) return usage();
-        servicestatus(ttype, serial,argv[1]);
+        do_shellcommand(ttype, serial,"getprop init.svc.",argv[1]);
         return 0;
     }
     if(!strcmp(argv[0],"svc-stop") || !strcmp(argv[0],"ks")) {
         if(argc == 1) return usage();
-        stopservice(ttype, serial,argv[1]);
+                do_shellcommand(ttype, serial,"stop ",argv[1]);
         return 0;
     }
     if(!strcmp(argv[0],"svc-restart") || !strcmp(argv[0],"rs")) {
         if(argc == 1) return usage();
-        stopservice(ttype, serial,argv[1]);
-        startservice(ttype, serial,argv[1]);
+        do_shellcommand(ttype, serial,"stop ",argv[1]);
+        do_shellcommand(ttype, serial,"start ",argv[1]);
         return 0;
     }
 
     
     
     if(!strcmp(argv[0],"dmesg")) {
-        do_dmesg(ttype, serial);
+        do_shellcommand(ttype, serial,"dmesg ",NULL);
         return 0;
     }
 
@@ -1745,7 +1755,7 @@ cleanup_apk:
 
     return err;
 }
-static char* read_shellcommand(transport_type transport, char* serial, char* buf)
+/*static char* read_shellcommand(transport_type transport, char* serial, char* buf)
 {
     int fd, ret,len; 
 
@@ -1785,7 +1795,7 @@ static char* read_shellcommand(transport_type transport, char* serial, char* buf
         perror("close");
 
     return NULL;
-}
+}*/
 static int getprop(transport_type transport, char* serial,char* propname)
 {
     char buf[8192];
@@ -1798,37 +1808,19 @@ static int getprop(transport_type transport, char* serial,char* propname)
     //read_shellcommand(transport, serial, buf);    
     if( buf == NULL)
         return 0;
-    char ** outputlist=NULL;        
-    int propcount =0;
+    //char ** outputlist=NULL;        
+    //int propcount =0;
     // strtolist(buf, &outputlist);
     printf("Prop Count:%d\n\n",strlen(buf));
     return 0;
 }
-static int startservice(transport_type transport, char* serial,char* servicename)
+static int do_shellcommand(transport_type transport, char* serial,char* shellcommand,char* argument)
 {
     char buf[256];
-    snprintf(buf, sizeof(buf), "shell:start %s ",servicename);
-    send_shellcommand(transport, serial, buf);    
-    return 0;
-}
-static int stopservice(transport_type transport, char* serial,char* servicename)
-{
-    char buf[256];
-    snprintf(buf, sizeof(buf), "shell:stop %s ",servicename);
-    send_shellcommand(transport, serial, buf);    
-    return 0;
-}
-static int servicestatus(transport_type transport, char* serial,char* servicename)
-{
-    char buf[256];
-    snprintf(buf, sizeof(buf), "shell:getprop init.svc.%s ",servicename);
-    send_shellcommand(transport, serial, buf);    
-    return 0;
-}
-static int do_dmesg(transport_type transport, char* serial)
-{
-    char buf[256];
-    snprintf(buf, sizeof(buf), "shell:dmesg ");
+    if ( argument == NULL )
+            snprintf(buf, sizeof(buf), "shell:%s ",shellcommand);
+    else
+            snprintf(buf, sizeof(buf), "shell:%s%s ",shellcommand,argument);
     send_shellcommand(transport, serial, buf);    
     return 0;
 }
