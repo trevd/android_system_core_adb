@@ -137,8 +137,8 @@ int is_adb_command(int argc,char* argv[])
                         help_all();
                 if(!strcmp(argv[1], "logcat"))
                         help_logcat();
-               if(!strcmp(argv[1], "input"))
-                        help_input();                        
+               if(!strcmp(argv[1], "keycodes"))
+                        help_keycodes();                        
         }
         
         return 0;

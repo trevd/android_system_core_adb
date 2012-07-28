@@ -5,7 +5,7 @@
 #define ADB_EXTENDED_VERSION 0
 void version(FILE * out);
 void fullversion(FILE * out);
-void help_input();
+void help_keycodes();
 void help_logcat();
 void help_all();
 void help();

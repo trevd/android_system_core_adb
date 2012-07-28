@@ -9,6 +9,19 @@ void fullversion(FILE * out) {
          ADB_VERSION_MAJOR, ADB_VERSION_MINOR, ADB_SERVER_VERSION,ADB_EXTENDED_VERSION);
 
 }
+void help_reboot(int full)
+{
+       if(full) 
+                fprintf(stderr,
+
+                        "  adb [reboot] <[bootloader|recovery]>         - reboots the device, optionally into the bootloader or recovery program\n"
+                        "                                                 the reboot keyword is optional\n"
+                        "  adb reboot-bootloader                        - reboots the device into the bootloader\n");
+        else
+                fprintf(stderr,
+                        "  adb reboot [bootloader|recovery]            - reboots the device, optionally into the bootloader or recovery program\n"
+                        "  adb reboot-bootloader                       - reboots the device into the bootloader\n");
+}
 void help_switches(int full)
 {
         fprintf(stderr,
@@ -89,9 +102,20 @@ void help_sync_commands(int full)
                         "  adb emu <command>                            - run emulator console command\n");
         
 }
-void help_input()
+void help_keycodes()
 {
-        printf("Test");
+}
+void help_input(int full)
+{
+        if(full)
+                fprintf(stderr,"input commands:\n"
+                "  - You can send keyevents by name to a connected device simply by running\n"
+                "       adb <keycode_name>\n"
+                "  - This is the equivalent of adb shell input keyevent <keyevent code>\n"
+                "    All keyevents begin with the KEYCODE prefix. Some select keyevents have\n"
+                "    short versions, for a full list enter\n"
+                "       adb help keycodes\n" ) ;
+  
 }
 void help_logcat(int full)
 {
@@ -107,6 +131,8 @@ void help_logcat(int full)
                         "  adb logcat-events | lce [ <filter-spec> ]    - View device events log\n"
                         "  adb logcat-system | lcs [ <filter-spec> ]    - View device syetem log only\n"
                         "  adb logcat-help | lch                        - View help information for logcat command\n"
+                        "  adb dmesg                                    - Print the kernel ring buffer. This is the equivalent\n"
+                        "                                                 adb shell dmesg\n"
                 );
         else
                 fprintf(stderr,
@@ -115,7 +141,7 @@ void help_logcat(int full)
 }
 void help_enviroment_variables(int full)
 {
-        fprintf(stderr,
+        fprintf(stderr,"\n"
                 "environmental variables:\n" 
                 "  ADB_TRACE                                    - Print debug information. A comma separated list of the following values\n"
                 "                                                 1 or all, adb, sockets, packets, rwx, usb, sync, sysdeps, transport, jdwp\n"
@@ -128,7 +154,6 @@ void help_enviroment_variables(int full)
                 
                         
 }
-void help_keycodes(){}
 void help_help(int full)
 {
         if(full) 
@@ -197,20 +222,20 @@ void help_main(int full)
                         help_help(full);
                         fprintf(stderr,"\n"
                         "scripting:\n"
-                        "  adb wait-for-device          - block until device is online\n"
-                        "  adb start-server             - ensure that there is a server running\n"
-                        "  adb kill-server              - kill the server if it is running\n"
-                        "  adb get-state                - prints: offline | bootloader | device\n"
-                        "  adb get-serialno             - prints: <serial-number>\n"
-                        "  adb status-window            - continuously print device status for a specified device\n"
-                        "  adb remount                  - remounts the /system partition on the device read-write\n"
-                        "  adb reboot [bootloader|recovery] - reboots the device, optionally into the bootloader or recovery program\n"
-                        "  adb reboot-bootloader        - reboots the device into the bootloader\n"
-                        "  adb root                     - restarts the adbd daemon with root permissions\n"
-                        "  adb usb                      - restarts the adbd daemon listening on USB\n"
-                        "  adb tcpip <port>             - restarts the adbd daemon listening on TCP on the specified port"
-                        "\n"
-                        "networking:\n"
+                        "  adb wait-for-device                          - block until device is online\n"
+                        "  adb start-server                             - ensure that there is a server running\n"
+                        "  adb kill-server                              - kill the server if it is running\n"
+                        "  adb get-state                                - prints: offline | bootloader | device\n"
+                        "  adb get-serialno                             - prints: <serial-number>\n"
+                        "  adb status-window                            - continuously print device status for a specified device\n"
+                        "  adb remount                                  - remounts the /system partition on the device read-write\n");
+                        help_reboot(full);
+                        fprintf(stderr,
+                        "  adb root                                     - restarts the adbd daemon with root permissions\n"
+                        "  adb usb                                      - restarts the adbd daemon listening on USB\n"
+                        "  adb tcpip <port>                             - restarts the adbd daemon listening on TCP on the specified port\n");
+                        if(full)fprintf(stderr,"\n");                      
+                        fprintf(stderr,"networking:\n"
                         "  adb ppp <tty> [parameters]   - Run PPP over USB.\n"
                         " Note: you should not automatically start a PPP connection.\n"
                         " <tty> refers to the tty for PPP stream. Eg. dev:/dev/omap_csmi_tty1\n"
@@ -225,6 +250,7 @@ void help_main(int full)
                         "    is updated.\n"
                         "\n"
                         );
+                        help_input(full);
                         help_enviroment_variables(full);
 }
 void help_all()
