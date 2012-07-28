@@ -4,6 +4,8 @@ Added Shortcut versions adb commands and adb shell commands
 
 The majority of code changes are in commandline.c and adb_extended.c
 
+Full Help:
+adb help all = prints full information
 
 Shorthand Versions of shell commands:
 adb sh = adb shell
@@ -12,6 +14,8 @@ adb getprop = adb shell getprop
 adb svc-start = adb shell start
 adb svc-stop = adb shell stop
 ... plus many more
+
+
 
 Send Keyevents:
 You can send all keycodes by name to the device - this is a shortcut to
@@ -24,6 +28,11 @@ adb KEYCODE_MUSIC = adb input keyevent 209
 Start Activities:
 Currently only the settings activity can be started.
 adb settings = adb shell am start -a android.intent.action.MAIN -n com.android.settings/.Settings
+
+Long Push Status Info:
+prints progress information when doing adb push on a large file will now 
+
+
 
 
 Building

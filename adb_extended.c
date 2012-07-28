@@ -59,6 +59,11 @@ int print_args(char* function,int argc, char **argv,int newline)
 	return 0;
 }
 
+int get_ascii(char single_char) {
+  int ret =  (int)single_char; 
+	  //printf("get_ascii:%c(%d)",single_char,ret);  
+  return ret;
+}
 void print_ascii(char* buf) {
   int i=0 , len = strlen(buf);
   for(i=0;i<len;i++)
@@ -75,21 +80,33 @@ int is_shell_executable(char* line) {
 int strtolist(char* input, char*** outputlist)
 {
         char* lineptr;
+        if(strlen(input) == 0)
+                return 0;
         int argc=0;
         char* full_input= (char*) malloc(strlen(input) * sizeof(char));
+        //printf("input length:%d\n",strlen(input));
         strcpy(full_input,input);
         (*outputlist) = (char**) malloc(MAX_TOKS * sizeof(char**));
         do{
+                // Sometimes the last remaining chars are 2 - tab and bkspace for some reason
+                // a bit of an hack to handle to 
+                if((strlen(full_input) ==2) && (get_ascii(full_input[0]) == 9) && (get_ascii(full_input[1]) == 8))
+                        break;
+                
                 lineptr = strsep(&full_input,DELIMITERS);
-                (*outputlist)[argc]=lineptr;
-	        printf("argc:%d %s\n",argc,lineptr);
-       	        argc++;
+                if(lineptr != NULL){
+                        (*outputlist)[argc]=lineptr;
+                        //print_ascii(full_input);
+	                //printf("argc:%d %s Remaining:%d\n Full Input:%s:",argc,lineptr,strlen(full_input) ,full_input);
+	        }       
+	        argc++;
                 if(strlen(full_input) == 0) break;
         }while((lineptr != NULL) || (strlen(full_input) != 0));  
         return argc;
         
 }
-int parse_string(char* line, char*** argv) {
+
+/*int parse_string(char* line, char*** argv) {
 
   char* lineptr;  char* tabptr;
   int argc=0;
@@ -105,7 +122,7 @@ int parse_string(char* line, char*** argv) {
 	}while((lineptr != NULL) || (strlen(full_input) != 0));  
   return argc;
 }
-
+*/
 /*
 
 int get_device_count(int argc, char **argv){
@@ -132,16 +149,5 @@ char *select_device(int argc, char **argv){
 	return  serial;
 	
 }
-char *get_serial_from_index(int index){
-	char **device_list=NULL;
-	char *tmp = adb_query("host:devices");
-       	int device_count = 0;
-        if(tmp) device_count =parse_string(tmp,&device_list);
-       	if(index > device_count){
-       		fprintf(stderr,"error: index out of range");
-       		return NULL;
-       		}
-	if(index>0 && index<=device_count ) return device_list[index-1];
-	return NULL;
-}
+
 */

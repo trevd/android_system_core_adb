@@ -206,11 +206,15 @@ int sync_readmode(int fd, const char *path, unsigned *mode)
     *mode = ltohl(msg.stat.mode);
     return 0;
 }
-static int update_status(const char *rpath,const char *path,int size)
+static int update_status(const char *rpath,const char *path,unsigned int size,unsigned int written,const char *fromMethod)
 {
+        // Don't show status if we wrote it in a oner 
+        if((written == size) && (written == total_bytes))
+                return 0;
+                
         printf("%c[2J%c[2H", 27, 27);
-        printf("Android Debug Bridge Extended Version \n");
-        printf("Writing: %s -> %s %u/%u\n",path,rpath,total_bytes,size);
+        printf("Android Debug Bridge Extended Version %s\n",fromMethod);
+        printf("Writing: %s -> %s %u/%u Last Write:%u\n",path,rpath,total_bytes,size,written);
         fflush(stdout);
         return 0;
      }
@@ -223,7 +227,7 @@ static int write_data_file(int size,const char *rpath,int fd, const char *path, 
         fprintf(stderr,"cannot open '%s': %s\n", path, strerror(errno));
         return -1;
     }
-
+    
     sbuf->id = ID_DATA;
     for(;;) {
         int ret;
@@ -245,7 +249,7 @@ static int write_data_file(int size,const char *rpath,int fd, const char *path, 
             break;
         }        
         total_bytes += ret;
-        update_status(rpath,path,size);
+        update_status(rpath,path,size,ret,"write_data_file");
     }
 
     adb_close(lfd);
@@ -272,7 +276,7 @@ static int write_data_buffer(const char *rpath,const char *path,int fd, char* fi
         }
         total += count;
         total_bytes += count;
-        update_status(rpath,path,size);      
+        update_status(rpath,path,size,count,"write_data_buffer");      
     }
 
     return err;
@@ -298,7 +302,7 @@ static int write_data_link(int size,const char *rpath,int fd, const char *path, 
         return -1;
         
     total_bytes += len + 1;
-    update_status(rpath,path,size);
+    update_status(rpath,path,size,len,"write_data_link");
 
     return 0;
 }

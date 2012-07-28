@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,6 +47,64 @@ static int run_settings(transport_type transport, char* serial);
 //static int send_command(transport_type transport, char* serial,int argc, char** argv);
 static const char *gProductOutPath = NULL;
 
+int kill_server()
+{
+        int fd;
+        fd = _adb_connect("host:kill");
+        if(fd == -1) {
+            fprintf(stderr,"* server not running *\n");
+            return 1;
+        }
+        return 0;
+}
+int is_server_control_command(char* argv)
+{
+    D("is_server_control_command: %s",argv);
+    if(!strcmp(argv, "kill-server") || !strcmp(argv, "kill")) {
+        return kill_server();
+    }
+    if (!strcmp(argv, "start-server") || !strcmp(argv, "start")) {
+        return adb_connect("host:start-server");
+    }
+    if (!strcmp(argv, "restart-server") || !strcmp(argv, "restart")) {
+        kill_server();
+        sleep(2);
+        return adb_connect("host:start-server");
+    }
+    return -1;
+}
+
+int get_device_list(char*** outputlist)
+{
+	char *tmp ;
+	tmp = adb_query("host:devices");
+       	int device_count = 0;
+        device_count = strtolist(tmp,outputlist);
+        return device_count;
+}
+char *get_serial_from_index(int index)
+{
+	char **device_list=NULL;
+	char *tmp ;
+	tmp = adb_query("host:devices");
+       	int device_count = 0;
+        if(tmp) device_count = get_device_list(&device_list);//strtolist(tmp,&device_list);
+       	if(index > device_count){
+       		fprintf(stderr,"error: index out of range\n");
+       		return NULL;
+       		}
+       		
+	if(index>0 && index<=device_count ) {
+	        char * lineptr = NULL;
+        	lineptr = strsep(&device_list[index-1],"\t");       		
+                return lineptr;
+        }
+	return NULL;
+}
+int is_adb_device_command(int argc,char* argv[])
+{
+        return -1;
+}
 static char *product_file(const char *extra)
 {
     int n;
@@ -212,7 +269,70 @@ int usage()
     help();
     return 1;
 }
+int is_adb_command(int argc,char* argv[])
+{
+    /* "adb /?" is a common idiom under Windows */
+    if(!strcmp(argv[0], "help") || !strcmp(argv[0], "/?")) {
+        if(argc == 1)
+                help();
+        else {
+                if(!strcmp(argv[1], "all"))
+                        help_all();
+                if(!strcmp(argv[1], "logcat"))
+                        help_logcat();
+        }
+        
+        return 0;
+    }
+    if(!strcmp(argv[0], "version") || !strcmp(argv[0], "ver")) {
+        
+        if(argc==1)
+                version(stdout);
+        else if(!strcmp(argv[1],"full"))
+                fullversion(stdout);
+                       
+        return 0;
+    }
+    return -1;
 
+}
+int print_device_list(char* argv,int device_count,char * device_list[])
+{
+        int counter =0 ;
+        // only do strcmp once 
+        int is_devices = strcmp(argv, "devices");
+        if(!is_devices) 
+                printf("List of devices attached\n");
+        else
+                if(!strcmp(argv, "select"))
+                        printf("Select Device\n") ;
+                else    
+                        printf("List of devices attached - Total %d\n",device_count);
+          
+        if(device_count >= 1) {
+                for(counter = 0 ; counter < device_count ; counter ++)
+                {
+                        if(!is_devices)
+                                printf("%s\n",device_list[counter]);
+                        else // print a numbered list
+                            printf("%d %s\n",counter+1,device_list[counter]); 
+                }
+                if(!is_devices) printf("\n");
+                return 0;
+        } else {
+                if(!is_devices) printf("\n");
+                        return 1;
+        }
+        return 0;
+}
+char * select_device(int device_count,char * device_list[])
+{
+        print_device_list("select",device_count,device_list);
+        char line[3];
+        fgets(line, 3, stdin);
+        int index = atoi(line);
+        return get_serial_from_index(index);
+}
 #ifdef HAVE_TERMIO_H
 static struct termios tio_save;
 
@@ -939,7 +1059,7 @@ int adb_commandline(int argc, char **argv)
     int r=0;
     int quote=0;
     //print_args(argc,argv);
-    //exit(0);
+
     transport_type ttype = kTransportAny;
     char* serial = NULL;
     char* server_port_str = NULL;
@@ -1008,16 +1128,21 @@ int adb_commandline(int argc, char **argv)
                 argv++;
             }
         } 
-/*        #ifdef ADB_EXTENDED
-        else if (!strcmp(argv[0],"-i")) {
-        	int index = atoi(argv[1]);
-        	argv[0]="-s";
-        	serial = get_serial_from_index(index);
-        	argv[1] =serial;
-        	argc--;
-                argv++;
+       #ifdef ADB_EXTENDED
+        else if ( argv[0][0]=='-' && argv[0][1]=='i') {
+                int index = 0;
+                if (isdigit(argv[0][2])) 
+                        index = atoi(argv[0]+2);
+                else{
+        	        index = atoi(argv[1]);
+        	        argc--;
+                        argv++;
+        	}
+        	if((serial = get_serial_from_index(index)) == NULL)
+        	        return 0;
+        	
         } 
-        #endif*/
+        #endif
         else if (!strcmp(argv[0],"-d")) {
             ttype = kTransportUsb;
         } else if (!strcmp(argv[0],"-e")) {
@@ -1030,6 +1155,9 @@ int adb_commandline(int argc, char **argv)
         argv++;
     }
 
+    if (serial != NULL)
+            printf("Running \"%s\" Command On Device:%s\n",argv[0],serial);
+    
     adb_set_transport(ttype, serial);
     adb_set_tcp_specifics(server_port);
 
@@ -1050,19 +1178,22 @@ top:
 if(argc == 0) {
         return usage();
     }
+
+    int return_value = -1 ; // -1 indicates the command has not been processed yet 
+    
+    if((return_value = is_adb_command(argc,argv))>-1) 
+        return return_value; 
+    if((return_value = is_server_control_command(argv[0]))>-1) 
+        return return_value;
+    
    /* adb_connect() commands */
-   
+    char **device_list=NULL;
+    int device_count = get_device_list(&device_list);
     if(!strcmp(argv[0], "devices") || !strcmp(argv[0], "dev") || !strcmp(argv[0], "lsdev") || !strcmp(argv[0], "lsadb")) {
-        char *tmp;
-        tmp = adb_query("host:devices");
-        if(tmp) {
-            printf("List of devices attached \n");
-            printf("%s\n", tmp);
-            return 0;
-        } else {
-            return 1;
-        }
+        return print_device_list(argv[0],device_count,device_list);
+         
     }
+    
 
     if(!strcmp(argv[0], "connect") || !strcmp(argv[0], "conn")  ) {
         char *tmp;
@@ -1100,12 +1231,20 @@ if(argc == 0) {
         }
     }
 
+ 
     if (!strcmp(argv[0], "emu")) {
         return adb_send_emulator_command(argc, argv);
     }
     
-
+    
 #ifdef ADB_EXTENDED
+       if((device_count > 1)  && (serial == NULL)) {
+                serial =select_device(device_count,device_list);
+                adb_set_transport(ttype, serial);
+                adb_set_tcp_specifics(server_port);
+           
+           
+       }   
        int real_keycode =process_input_command(argc,argv);
        D("real keycode=%d\n",real_keycode);
        if( !strcmp(argv[0],"twr" )) 
@@ -1219,15 +1358,7 @@ if(argc == 0) {
         }
     }
 
-    if(!strcmp(argv[0], "kill-server")) {
-        int fd;
-        fd = _adb_connect("host:kill");
-        if(fd == -1) {
-            fprintf(stderr,"* server not running *\n");
-            return 1;
-        }
-        return 0;
-    }
+    
 
     if(!strcmp(argv[0], "sideload")) {
         if(argc != 2) return usage();
@@ -1496,10 +1627,7 @@ if(argc == 0) {
         return ppp(argc, argv);
     }
 
-    if (!strcmp(argv[0], "start-server")) {
-        return adb_connect("host:start-server");
-    }
-
+    
     if (!strcmp(argv[0], "backup")) {
         return backup(argc, argv);
     }
@@ -1520,30 +1648,7 @@ if(argc == 0) {
         }
     }
 
-    /* "adb /?" is a common idiom under Windows */
-    if(!strcmp(argv[0], "help") || !strcmp(argv[0], "/?")) {
-        if(argc == 1)
-                help();
-        else {
-                if(!strcmp(argv[1], "all"))
-                        help_all();
-                if(!strcmp(argv[1], "logcat"))
-                        help_logcat();
-        }
-        
-        return 0;
-    }
     
-
-    if(!strcmp(argv[0], "version") || !strcmp(argv[0], "ver")) {
-        
-        if(argc==1)
-                version(stdout);
-        else if(!strcmp(argv[1],"full"))
-                fullversion(stdout);
-                       
-        return 0;
-    }
 
     usage();
     return 1;
