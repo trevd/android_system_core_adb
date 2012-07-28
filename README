@@ -1,5 +1,5 @@
 ADBX - An extended version of adb.
-
+ 
 Added Shortcut versions adb commands and adb shell commands
 
 The majority of code changes are in commandline.c and adb_extended.c
