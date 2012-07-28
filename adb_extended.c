@@ -44,8 +44,6 @@ int process_input_command(int argc,char **argv){
 	char* real_keycode=adb_input_keyevent_command_pairs[command_code_index];
         D("real_keycode:%s\n",real_keycode);	
 		return atol(real_keycode) ;
-		
-	
 	} return -1;
 }
 int print_args(char* function,int argc, char **argv,int newline)
@@ -106,48 +104,3 @@ int strtolist(char* input, char*** outputlist)
         
 }
 
-/*int parse_string(char* line, char*** argv) {
-
-  char* lineptr;  char* tabptr;
-  int argc=0;
-  char* full_input= (char*) malloc(strlen(line) * sizeof(char));
-  strcpy(full_input,line);
-  (*argv) = (char**) malloc(MAX_TOKS * sizeof(char**));
-  do{
-	  lineptr = strsep(&full_input,DELIMITERS);
-	  tabptr = strsep(&lineptr,TAB_DELIMITERS);
-	  (*argv)[argc]=tabptr;
-	  argc++;
-	  if(strlen(full_input) == 0) break;
-	}while((lineptr != NULL) || (strlen(full_input) != 0));  
-  return argc;
-}
-*/
-/*
-
-int get_device_count(int argc, char **argv){
- 	char **device_list=NULL;
-	char *tmp = adb_query("host:devices");
-       	int device_count = 0;
-        if(tmp) device_count =parse_string(tmp,&device_list);
-        return device_count;
-}
-char *select_device(int argc, char **argv){
-	print_args("Starting select_device Command",argc,argv,0);
-	int i =0 ; char **device_list=NULL;
-	char *tmp = adb_query("host:devices");
-       	int device_count = 0;
-        if(tmp) device_count = parse_string(tmp,&device_list);
-        int input_count =  device_count > 0 ? (int) log10 ((double) device_count) + 1 : 1;        
-        printf("Select Device:[1-%d]\n",device_count);
-	for (i = 0; i < device_count; ++i)
-		printf("%d: %s\n",i+1,device_list[i]);
-	int index=get_user_entry(input_count,device_count,argc,argv);
-	char * serial = get_serial_from_index(index);
-	//printf("Attempting to connect to device: %s\n",serial);
-	print_args("finishing select_device Command",argc,argv,1);	
-	return  serial;
-	
-}
-
-*/

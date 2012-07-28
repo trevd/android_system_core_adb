@@ -20,6 +20,7 @@
 #include <limits.h>
 
 #include "transport.h"  /* readx(), writex() */
+#include "help.h"
 #include "adb_extended.h"
 #define MAX_PAYLOAD 4096
 
@@ -32,10 +33,6 @@
 
 #define A_VERSION 0x01000000        // ADB protocol version
 
-#define ADB_VERSION_MAJOR 1         // Used for help/version information
-#define ADB_VERSION_MINOR 0         // Used for help/version information
-
-#define ADB_SERVER_VERSION    29    // Increment this when we want to force users to start a new adb server
 
 typedef struct amessage amessage;
 typedef struct apacket apacket;

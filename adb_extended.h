@@ -2,7 +2,7 @@
 #define _ADB_EXTENDED_H_
 #define ADB_EXTENDED
 #include "adb.h"
-#define ADB_EXTENDED_VERSION 0
+
 int process_input_command(int argc,char **argv);
 int is_shell_executable(char* line) ;
 int strtolist(char* input, char*** output_ptr);

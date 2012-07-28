@@ -7,6 +7,10 @@ The majority of code changes are in commandline.c and adb_extended.c
 Full Help:
 adb help all = prints full information
 
+Better Multiple Device Support 
+interactive device selection if more than one device connect, devices can be selected by 
+index number using -i switch
+
 Shorthand Versions of shell commands:
 adb sh = adb shell
 adb dmesg = adb shell dmesg

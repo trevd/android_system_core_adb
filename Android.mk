@@ -64,7 +64,8 @@ LOCAL_SRC_FILES := \
 	$(USB_SRCS) \
 	utils.c \
 	usb_vendors.c \
-	adb_extended.c
+	adb_extended.c \
+	help.c
 
 
 ifneq ($(USE_SYSDEPS_WIN32),)
@@ -114,7 +115,8 @@ LOCAL_SRC_FILES := \
 	usb_linux_client.c \
 	log_service.c \
 	utils.c \
-	adb_extended.c
+	adb_extended.c \
+	help.c
 
 LOCAL_CFLAGS := -O2 -g -DADB_HOST=0 -Wall -Wno-unused-parameter
 LOCAL_CFLAGS += -D_XOPEN_SOURCE -D_GNU_SOURCE
@@ -156,7 +158,8 @@ LOCAL_SRC_FILES := \
 	utils.c \
 	usb_vendors.c \
 	fdevent.c \
-		adb_extended.c 
+	adb_extended.c \
+	help.c
 
 LOCAL_CFLAGS := \
 	-O2 \
