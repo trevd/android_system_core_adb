@@ -205,7 +205,17 @@ int sync_readmode(int fd, const char *path, unsigned *mode)
 
     *mode = ltohl(msg.stat.mode);
     return 0;
+
 }
+static int update_pull(const char *rpath,const char *path,unsigned int read)
+{
+             printf("%c[2J%c[2H", 27, 27);
+        printf("Android Debug Bridge Extended Version\n");
+        printf("Reading: %s -> %s %u/%u\n",rpath,path,total_bytes,read);
+        fflush(stdout);
+        return 0;
+}
+
 static int update_status(const char *rpath,const char *path,unsigned int size,unsigned int written,const char *fromMethod)
 {
         // Don't show status if we wrote it in a oner 
@@ -516,6 +526,7 @@ int sync_recv(int fd, const char *rpath, const char *lpath)
         }
 
         total_bytes += len;
+        update_pull(rpath,lpath,len);
     }
 
     adb_close(lfd);

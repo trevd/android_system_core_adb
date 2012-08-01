@@ -2,12 +2,21 @@
 #define _ADB_EXTENDED_H_
 #define ADB_EXTENDED
 #include "adb.h"
-
+char *get_serial_from_index(int index);
 int process_input_command(int argc,char **argv);
 int is_shell_executable(char* line) ;
+int do_cmd(transport_type ttype, char* serial, char *cmd, ...); 
+int send_shellcommand(transport_type transport, char* serial, char* buf);
+int do_shellcommand(transport_type transport, char* serial,char* shellcommand,char* argument);
+int run_settings(transport_type transport, char* serial);
 int strtolist(char* input, char*** output_ptr);
-//static char* read_shellcommand(transport_type transport, char* serial, char* buf);
-
-//static int send_command(transport_type transport, char* serial,int argc, char** argv);
+int is_ipaddress(char* ipaddress);
+int is_adb_command(int argc,char* argv[]);
+void read_and_dump(int fd);
+int kill_server();
+int is_server_control_command(char* argv);
+int get_device_list(char*** outputlist);
+int is_adb_device_command(int argc,char* argv[]);
+char *gProductOutPath;
 #endif 
 

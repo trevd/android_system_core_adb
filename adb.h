@@ -21,7 +21,6 @@
 
 #include "transport.h"  /* readx(), writex() */
 #include "help.h"
-#include "adb_extended.h"
 #define MAX_PAYLOAD 4096
 
 #define A_SYNC 0x434e5953

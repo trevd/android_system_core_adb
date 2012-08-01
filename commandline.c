@@ -34,77 +34,12 @@
 #include "adb_client.h"
 #include "file_sync_service.h"
 #include "adb_extended.h"
-
-static int do_cmd(transport_type ttype, char* serial, char *cmd, ...);
-
 void get_my_path(char *s, size_t maxLen);
 int find_sync_dirs(const char *srcarg,char **android_srcdir_out, char **data_srcdir_out);
 int install_app(transport_type transport, char* serial, int argc, char** argv);
 int uninstall_app(transport_type transport, char* serial, int argc, char** argv);
-static int do_shellcommand(transport_type transport, char* serial,char* shellcommand,char* argument);
-static int run_settings(transport_type transport, char* serial);
-//static int send_command(transport_type transport, char* serial,int argc, char** argv);
-static const char *gProductOutPath = NULL;
-
-int kill_server()
-{
-        int fd;
-        fd = _adb_connect("host:kill");
-        if(fd == -1) {
-            fprintf(stderr,"* server not running *\n");
-            return 1;
-        }
-        return 0;
-}
-int is_server_control_command(char* argv)
-{
-    D("is_server_control_command: %s",argv);
-    if(!strcmp(argv, "kill-server") || !strcmp(argv, "kill")) {
-        return kill_server();
-    }
-    if (!strcmp(argv, "start-server") || !strcmp(argv, "start")) {
-        return adb_connect("host:start-server");
-    }
-    if (!strcmp(argv, "restart-server") || !strcmp(argv, "restart")) {
-        kill_server();
-        sleep(2);
-        return adb_connect("host:start-server");
-    }
-    return -1;
-}
-
-int get_device_list(char*** outputlist)
-{
-	char *tmp ;
-	tmp = adb_query("host:devices");
-       	int device_count = 0;
-        device_count = strtolist(tmp,outputlist);
-        return device_count;
-}
-char *get_serial_from_index(int index)
-{
-	char **device_list=NULL;
-	char *tmp ;
-	tmp = adb_query("host:devices");
-       	int device_count = 0;
-        if(tmp) device_count = get_device_list(&device_list);//strtolist(tmp,&device_list);
-       	if(index > device_count){
-       		fprintf(stderr,"error: index out of range\n");
-       		return NULL;
-       		}
-       		
-	if(index>0 && index<=device_count ) {
-	        char * lineptr = NULL;
-        	lineptr = strsep(&device_list[index-1],"\t");       		
-                return lineptr;
-        }
-	return NULL;
-}
-int is_adb_device_command(int argc,char* argv[])
-{
-        return -1;
-}
-static char *product_file(const char *extra)
+int flash_img(transport_type transport, char* serial,char* ,int argc,char** argv);
+char *product_file(const char *extra)
 {
     int n;
     char *x;
@@ -126,35 +61,7 @@ static char *product_file(const char *extra)
     return x;
 }
 
-int is_adb_command(int argc,char* argv[])
-{
-    /* "adb /?" is a common idiom under Windows */
-    if(!strcmp(argv[0], "help") || !strcmp(argv[0], "/?")) {
-        if(argc == 1)
-                help();
-        else {
-                if(!strcmp(argv[1], "all"))
-                        help_all();
-                if(!strcmp(argv[1], "logcat"))
-                        help_logcat();
-               if(!strcmp(argv[1], "keycodes"))
-                        help_keycodes();                        
-        }
-        
-        return 0;
-    }
-    if(!strcmp(argv[0], "version") || !strcmp(argv[0], "ver")) {
-        
-        if(argc==1)
-                version(stdout);
-        else if(!strcmp(argv[1],"full"))
-                fullversion(stdout);
-                       
-        return 0;
-    }
-    return -1;
 
-}
 int print_device_list(char* argv,int device_count,char * device_list[])
 {
         int counter =0 ;
@@ -219,27 +126,7 @@ static void stdin_raw_restore(int fd)
 }
 #endif
 
-static void read_and_dump(int fd)
-{
-    char buf[4096];
-    int len;
 
-    while(fd >= 0) {
-        D("read_and_dump(): pre adb_read(fd=%d)\n", fd);
-        len = adb_read(fd, buf, 4096);
-        D("read_and_dump(): post adb_read(fd=%d): len=%d\n", fd, len);
-        if(len == 0) {
-            break;
-        }
-
-        if(len < 0) {
-            if(errno == EINTR) continue;
-            break;
-        }
-        fwrite(buf, 1, len, stdout);
-        fflush(stdout);
-    }
-}
 
 static void copy_to_file(int inFd, int outFd) {
     const size_t BUFSIZE = 32 * 1024;
@@ -600,26 +487,7 @@ int ppp(int argc, char **argv)
 #endif /* !HAVE_WIN32_PROC */
 }
 
-static int send_shellcommand(transport_type transport, char* serial, char* buf)
-{
-    int fd, ret; 
 
-    for(;;) {
-        fd = adb_connect(buf);
-        if(fd >= 0)
-            break;
-        fprintf(stderr,"- waiting for device -\n");
-        adb_sleep_ms(1000);
-        do_cmd(transport, serial, "wait-for-device", 0);
-    }
-
-    read_and_dump(fd);
-    ret = adb_close(fd);
-    if (ret)
-        perror("close");
-
-    return ret;
-}
 // logcat_type -1: help ; 0: normal ; 1: system ; 2: main ; 3: events ; 4: radio ;5: all
 static int logcat(transport_type transport, char* serial, int argc, char **argv,int logcat_type)
 {
@@ -851,7 +719,7 @@ TODO: debug?  sooner-debug, sooner:debug?
  * Given <hint>, try to construct an absolute path to the
  * ANDROID_PRODUCT_OUT dir.
  */
-static const char *find_product_out_path(const char *hint)
+char *find_product_out_path(const char *hint)
 {
     static char path_buf[PATH_MAX];
 
@@ -915,17 +783,17 @@ int adb_commandline(int argc, char **argv)
     int no_daemon = 0;
     int is_daemon = 0;
     int is_server = 0;
+    //int is_flash = 0;
     int persist = 0;
     int r=0;
     int quote=0;
-    //print_args(argc,argv);
 
     transport_type ttype = kTransportAny;
     char* serial = NULL;
     char* server_port_str = NULL;
     char* char_index = NULL ; 
     int index = 0;
-
+    
         /* If defined, this should be an absolute path to
          * the directory containing all of the various system images
          * for a particular product.  If not defined, and the adb
@@ -959,7 +827,7 @@ int adb_commandline(int argc, char **argv)
             return usage();
         }
     }
-
+    
     /* modifiers and flags */
     while(argc > 0) {
         if(!strcmp(argv[0],"server")) {
@@ -1010,7 +878,7 @@ int adb_commandline(int argc, char **argv)
         	        return 0;
         	
         } 
-        #endif
+       #endif
         else if (!strcmp(argv[0],"-d")) {
             ttype = kTransportUsb;
         } else if (!strcmp(argv[0],"-e")) {
@@ -1048,6 +916,9 @@ if(argc == 0) {
     }
 
     int return_value = -1 ; // -1 indicates the command has not been processed yet 
+    int isip=is_ipaddress(argv[0]); // check to see if a valid ip address has been thrown at us
+
+
     
     if((return_value = is_adb_command(argc,argv))>-1) 
         return return_value; 
@@ -1063,13 +934,17 @@ if(argc == 0) {
     }
     
 
-    if(!strcmp(argv[0], "connect") || !strcmp(argv[0], "conn")  ) {
+    if(!strcmp(argv[0], "connect") || !strcmp(argv[0], "conn") || isip ) {
         char *tmp;
-        if (argc != 2) {
+        
+        if (argc != 2 && !isip) {
             fprintf(stderr, "Usage: adb connect <host>[:<port>]\n");
             return 1;
         }
-        snprintf(buf, sizeof buf, "host:connect:%s", argv[1]);
+        if(isip)
+                snprintf(buf, sizeof buf, "host:connect:%s", argv[0]);
+        else
+                snprintf(buf, sizeof buf, "host:connect:%s", argv[1]);
         tmp = adb_query(buf);
         if(tmp) {
             printf("%s\n", tmp);
@@ -1115,6 +990,7 @@ if(argc == 0) {
            
            
        }   
+       
        int real_keycode =process_input_command(argc,argv);
        D("real keycode=%d\n",real_keycode);
        if( !strcmp(argv[0],"twr" )) 
@@ -1529,39 +1405,6 @@ if(argc == 0) {
     return 1;
 }
 
-static int do_cmd(transport_type ttype, char* serial, char *cmd, ...)
-{
-    char *argv[16];
-    int argc;
-    va_list ap;
-
-    va_start(ap, cmd);
-    argc = 0;
-
-    if (serial) {
-        argv[argc++] = "-s";
-        argv[argc++] = serial;
-    } else if (ttype == kTransportUsb) {
-        argv[argc++] = "-d";
-    } else if (ttype == kTransportLocal) {
-        argv[argc++] = "-e";
-    }
-
-    argv[argc++] = cmd;
-    while((argv[argc] = va_arg(ap, char*)) != 0) argc++;
-    va_end(ap);
-
-#if 0
-    int n;
-    fprintf(stderr,"argc = %d\n",argc);
-    for(n = 0; n < argc; n++) {
-        fprintf(stderr,"argv[%d] = \"%s\"\n", n, argv[n]);
-    }
-#endif
-
-    return adb_commandline(argc, argv);
-}
-
 int find_sync_dirs(const char *srcarg,
         char **android_srcdir_out, char **data_srcdir_out)
 {
@@ -1774,48 +1617,7 @@ cleanup_apk:
 
     return err;
 }
-/*static char* read_shellcommand(transport_type transport, char* serial, char* buf)
-{
-    int fd, ret,len; 
-
-    for(;;) {
-        fd = adb_connect(buf);
-        if(fd >= 0)
-            break;
-        fprintf(stderr,"- waiting for device -\n");
-        adb_sleep_ms(1000);
-        do_cmd(transport, serial, "wait-for-device", 0);
-    }
-    int totallen =0; 
-    while(fd >= 0) {
-        D("pre adb_read(fd=%d)\n", fd);
-        len = adb_read(fd, buf, 8192);
-        totallen += len;
-        D("post adb_read(fd=%d): len=%d\n", fd, len);
-        if(len == 0) {
-               
-            break;
-        }
-
-        if(len < 0) {
-            if(errno == EINTR) continue;
-            break;
-        }
-        
-    }    
-    
-//    char* full_ouput= (char*) malloc(strlen(buf) * sizeof(char));
- //   strcpy(full_input,input);
-    //read_and_dump(fd);
-    printf("%s",buf);
-    D("totallen=%d sizeof buff %d\n", totallen,strlen(buf));
-    ret = adb_close(fd);
-    if (ret)
-        perror("close");
-
-    return NULL;
-}*/
-static int getprop(transport_type transport, char* serial,char* propname)
+/*static int getprop(transport_type transport, char* serial,char* propname)
 {
     char buf[8192];
     //char* quoted;
@@ -1833,21 +1635,5 @@ static int getprop(transport_type transport, char* serial,char* propname)
     printf("Prop Count:%d\n\n",strlen(buf));
     return 0;
 }
-static int do_shellcommand(transport_type transport, char* serial,char* shellcommand,char* argument)
-{
-    char buf[256];
-    if ( argument == NULL )
-            snprintf(buf, sizeof(buf), "shell:%s ",shellcommand);
-    else
-            snprintf(buf, sizeof(buf), "shell:%s%s ",shellcommand,argument);
-    send_shellcommand(transport, serial, buf);    
-    return 0;
-}
-static int  run_settings(transport_type transport, char* serial)
-{
-    char buf[256];
-    snprintf(buf, sizeof(buf), "shell:am start -a android.intent.action.MAIN -n com.android.settings/.Settings");
-    send_shellcommand(transport, serial, buf);    
-    return 0;
-    
-}
+
+*/
