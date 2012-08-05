@@ -1351,6 +1351,9 @@ if(argc == 0) {
     if(!strcmp(argv[0],"settings") ) {
         return run_settings(ttype, serial);
         }
+    if(!strcmp(argv[0],"vending") ) {
+        return run_play(ttype, serial);
+        }
     // logcat_type 0: normal 1: system  2: main 3: events 4: radio 5: all
     if(!strcmp(argv[0],"logcat-help") || !strcmp(argv[0],"lch")) {
         return logcat(ttype, serial, argc, argv,-1);

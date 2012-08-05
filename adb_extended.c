@@ -23,7 +23,13 @@
 
 #define MAX_STRING_LENGTH 512
 #define MAX_TOKS 512
-
+int run_play(transport_type transport, char* serial)
+{
+   char buf[256];
+   snprintf(buf, sizeof(buf), "shell:am start -a android.intent.action.MAIN -n com.android.vending/.AssetBrowserActivity");
+   send_shellcommand(transport, serial, buf);    
+   return 0;
+}
 int run_settings(transport_type transport, char* serial)
 {
     char buf[256];
