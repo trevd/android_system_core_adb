@@ -8,7 +8,7 @@ Full Help:
 adb help all = prints full information
 
 Better Multiple Device Support 
-interactive device selection if more than one device connect, devices can be selected by 
+interactive device selection if more than one device is connected , devices can be preselected selected by 
 index number using -i switch
 
 Shorthand Versions of shell commands:
@@ -17,7 +17,7 @@ adb dmesg = adb shell dmesg
 adb getprop = adb shell getprop
 adb svc-start = adb shell start
 adb svc-stop = adb shell stop
-... plus many more
+... plus many more 
 
 Send Keyevents:
 You can send all keycodes by name to the device - this is a shortcut to
