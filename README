@@ -15,8 +15,9 @@ Shorthand Versions of shell commands:
 adb sh = adb shell
 adb dmesg = adb shell dmesg
 adb getprop = adb shell getprop
-adb svc-start = adb shell start
-adb svc-stop = adb shell stop
+adb svc-start or adb st = adb shell start
+adb svc-stop or adb ks = adb shell stop
+adb 
 ... plus many more 
 
 Send Keyevents:
@@ -30,6 +31,7 @@ adb KEYCODE_MUSIC = adb input keyevent 209
 Start Activities:
 Currently only the settings activity can be started.
 adb settings = adb shell am start -a android.intent.action.MAIN -n com.android.settings/.Settings
+adb vending = am start -a android.intent.action.MAIN -n com.android.vending/.AssetBrowserActivity ( Starts google play )
 
 Long Push Status Info:
 prints progress information when doing adb push on a large file will now 
