@@ -29,7 +29,6 @@ adb home = adb input keyevent 3
 adb KEYCODE_MUSIC = adb input keyevent 209
 
 Start Activities:
-Currently only the settings activity can be started.
 adb settings = adb shell am start -a android.intent.action.MAIN -n com.android.settings/.Settings
 adb vending = am start -a android.intent.action.MAIN -n com.android.vending/.AssetBrowserActivity ( Starts google play )
 
