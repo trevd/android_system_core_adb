@@ -1,11 +1,10 @@
-ADBX - An extended version of adb.
+ADBX - An extended version of adb for the lazy and forgetful
  
-Added Shortcut versions adb commands and adb shell commands
+CURRENT STATUS - WORK IN PROGRESS 
 
 The majority of code changes are in commandline.c and adb_extended.c
 
-Full Help:
-adb help all = prints full information
+Full Help: adb help all = prints full information ( STILL IN DEVELOPMENT )
 
 Better Multiple Device Support 
 interactive device selection if more than one device is connected , devices can be preselected selected by 
@@ -14,10 +13,9 @@ index number using -i switch
 Shorthand Versions of shell commands:
 adb sh = adb shell
 adb dmesg = adb shell dmesg
-adb getprop = adb shell getprop
+adb getprop = adb gp = adb shell getprop
 adb svc-start or adb st = adb shell start
 adb svc-stop or adb ks = adb shell stop
-adb 
 ... plus many more 
 
 Send Keyevents:
@@ -31,19 +29,26 @@ adb KEYCODE_MUSIC = adb input keyevent 209
 Start Activities:
 adb settings = adb shell am start -a android.intent.action.MAIN -n com.android.settings/.Settings
 adb vending = am start -a android.intent.action.MAIN -n com.android.vending/.AssetBrowserActivity ( Starts google play )
+More to come.
 
-Long Push Status Info:
-prints progress information when doing adb push on a large file will now 
+Long Push/Pull Status Info:
+prints progress information when doing adb push on a large file will now ( FUNCTIONAL BUT STILL IN DEVELOPMENT )
+
+Maintains Compatibility With External Tools:
+Can be used as a replacement for the adb and will present itself as the standard adb to external tools such as 
+eclipse which does string comparison on the version number and expect a certain result.
+
+Bash Completion Support:
+Run adb.bash to register with bash completion. This can replace the one executed when running "source build/envsetup.sh"
+to setup an android aosp build 
 
 Building
-
 The easiest way to build this is from the aosp source tree.
 copy directory in the aosp root and run the following commands
 
 . build/envsetup.sh
 cd adbx
 mm
-
 
 Ouput of adb help all:
 
