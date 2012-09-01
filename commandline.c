@@ -1342,6 +1342,10 @@ if(argc == 0) {
         return 0;
     }
 
+    if(!strcmp(argv[0],"mount")) {
+        do_shellcommand(ttype, serial,"mount",NULL);
+        return 0;
+    }
     /* other commands */
 
     if(!strcmp(argv[0],"status-window")) {
