@@ -34,6 +34,7 @@
 #include "adb_client.h"
 #include "file_sync_service.h"
 #include "adb_extended.h"
+#include "fastboot/fastboot.h"
 void get_my_path(char *s, size_t maxLen);
 int find_sync_dirs(const char *srcarg,char **android_srcdir_out, char **data_srcdir_out);
 int install_app(transport_type transport, char* serial, int argc, char** argv);
@@ -1334,14 +1335,24 @@ if(argc == 0) {
         do_shellcommand(ttype, serial,"start ",argv[1]);
         return 0;
     }
-
+    
+	   
     
     
     if(!strcmp(argv[0],"dmesg")) {
         do_shellcommand(ttype, serial,"dmesg ",NULL);
         return 0;
     }
-
+    
+    if(!strcmp(argv[0],"fb")) {
+	if(argc == 1) return fb_usage();
+ 	if((argc >= 2)) {// && (!strncmp(argv[1],"devices",strlen("devices")))){
+ 		printf("List\n");
+		return fb_main(argc--,argv++);
+		}
+	
+        return 0;
+    }
     if(!strcmp(argv[0],"mount")) {
         do_shellcommand(ttype, serial,"mount",NULL);
         return 0;

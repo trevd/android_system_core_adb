@@ -12,7 +12,14 @@ include $(CLEAR_VARS)
 # Default to a virtual (sockets) usb interface
 USB_SRCS :=
 EXTRA_SRCS :=
-
+FASTBOOT_SRCS := \
+		fastboot/bootimg.c \
+		fastboot/engine.c \
+		fastboot/fastboot.c \
+		fastboot/protocol.c \
+		fastboot/usb_linux.c \
+		fastboot/util_linux.c
+ 
 ifeq ($(HOST_OS),linux)
   USB_SRCS := usb_linux.c
   EXTRA_SRCS := get_my_path_linux.c
@@ -48,6 +55,7 @@ ifeq ($(HOST_OS),windows)
   endif
   LOCAL_C_INCLUDES += development/host/windows/usb/api/
 endif
+ LOCAL_C_INCLUDES += $(LOCAL_PATH)/fastboot
 
 LOCAL_SRC_FILES := \
 	adb.c \
@@ -65,7 +73,8 @@ LOCAL_SRC_FILES := \
 	utils.c \
 	usb_vendors.c \
 	adb_extended.c \
-	help.c
+	help.c \
+	$(FASTBOOT_SRCS)
 
 
 ifneq ($(USE_SYSDEPS_WIN32),)
@@ -78,7 +87,7 @@ LOCAL_CFLAGS += -O2 -g -DADB_HOST=1  -Wall -Wno-unused-parameter
 LOCAL_CFLAGS += -D_XOPEN_SOURCE -D_GNU_SOURCE
 LOCAL_MODULE := adb
 
-LOCAL_STATIC_LIBRARIES := libzipfile libunz $(EXTRA_STATIC_LIBS)
+LOCAL_STATIC_LIBRARIES := libzipfile libunz $(EXTRA_STATIC_LIBS) libext4_utils libz
 ifeq ($(USE_SYSDEPS_WIN32),)
 	LOCAL_STATIC_LIBRARIES += libcutils
 endif
@@ -98,7 +107,14 @@ endif
 # =========================================================
 
 include $(CLEAR_VARS)
-
+FASTBOOT_SRCS := \
+		fastboot/engine.c \
+		fastboot/fastboot.c \
+		fastboot/protocol.c \
+		fastboot/usb_linux.c \
+		fastboot/util_linux.c \
+		fastboot/bootimg.c 
+  
 LOCAL_SRC_FILES := \
 	adb.c \
 	backup_service.c \
@@ -116,7 +132,8 @@ LOCAL_SRC_FILES := \
 	log_service.c \
 	utils.c \
 	adb_extended.c \
-	help.c
+	help.c \
+	$(FASTBOOT_SRCS)
 
 LOCAL_CFLAGS := -O2 -g -DADB_HOST=0 -Wall -Wno-unused-parameter
 LOCAL_CFLAGS += -D_XOPEN_SOURCE -D_GNU_SOURCE
@@ -131,7 +148,7 @@ LOCAL_FORCE_STATIC_EXECUTABLE := true
 LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT_SBIN)
 LOCAL_UNSTRIPPED_PATH := $(TARGET_ROOT_OUT_SBIN_UNSTRIPPED)
 
-LOCAL_STATIC_LIBRARIES := libcutils libc
+LOCAL_STATIC_LIBRARIES := libcutils libc libext4_utils libz libunz 
 include $(BUILD_EXECUTABLE)
 
 
@@ -139,7 +156,14 @@ include $(BUILD_EXECUTABLE)
 # =========================================================
 ifneq ($(SDK_ONLY),true)
 include $(CLEAR_VARS)
-
+FASTBOOT_SRCS := \
+		fastboot/bootimg.c \
+		fastboot/engine.c \
+		fastboot/fastboot.c \
+		fastboot/protocol.c \
+		fastboot/usb_linux.c \
+		fastboot/util_linux.c 
+  
 LOCAL_LDLIBS := -lrt -lncurses -lpthread
 
 LOCAL_SRC_FILES := \
@@ -159,7 +183,8 @@ LOCAL_SRC_FILES := \
 	usb_vendors.c \
 	fdevent.c \
 	adb_extended.c \
-	help.c
+	help.c \
+	$(FASTBOOT_SRCS)
 
 LOCAL_CFLAGS := \
 	-O2 \
@@ -173,7 +198,7 @@ LOCAL_CFLAGS := \
 
 LOCAL_MODULE := adb
 
-LOCAL_STATIC_LIBRARIES := libzipfile libunz libcutils
+LOCAL_STATIC_LIBRARIES := libzipfile libunz libcutils libext4_utils libz
 
 include $(BUILD_EXECUTABLE)
 endif
