@@ -18,6 +18,7 @@
 #include "input_keyevent_codes.h"
 #include "file_sync_service.h"
 #include "adb_client.h"
+#include "fastboot/fastboot.h"
 #define DELIMITERS "\n"
 #define TAB_DELIMITERS "\t"
 
@@ -70,6 +71,7 @@ char *get_serial_from_index(int index)
 	tmp = adb_query("host:devices");
        	int device_count = 0;
         if(tmp) device_count = get_device_list(&device_list);//strtolist(tmp,&device_list);
+	 fb_list_devices(device_count);
        	if(index > device_count){
        		fprintf(stderr,"error: index out of range\n");
        		return NULL;

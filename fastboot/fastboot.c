@@ -147,9 +147,10 @@ oops:
     return 0;
 }
 #endif
-
+int connected_device_count = 0;
 int match_fastboot(usb_ifc_info *info)
 {
+    //rintf("Match Fastboot:%x %x\n",info->dev_vendor,info->dev_product);	
     if(!(vendor_id && (info->dev_vendor == vendor_id)) &&
        (info->dev_vendor != 0x18d1) &&  // Google
        (info->dev_vendor != 0x8087) &&  // Intel
@@ -177,6 +178,7 @@ int list_devices_callback(usb_ifc_info *info)
 {
     if (match_fastboot(info) == 0) {
         char* serial = info->serial_number;
+	
         if (!info->writable) {
             serial = "no permissions"; // like "adb devices"
         }
@@ -184,7 +186,8 @@ int list_devices_callback(usb_ifc_info *info)
             serial = "????????????";
         }
         // output compatible with "adb devices"
-        printf("%s\tfastboot\n", serial);
+        connected_device_count ++;
+        printf("%d %s\tfastboot\n",connected_device_count,serial);
     }
 
     return -1;
@@ -208,10 +211,11 @@ usb_handle *open_device(void)
     }
 }
 
-int fb_list_devices(void) {
+int fb_list_devices(int device_count) {
     // We don't actually open a USB device here,
     // just getting our callback called so we can
     // list all the connected devices.
+    connected_device_count = device_count;
     usb_open(list_devices_callback);
     return 0;
 }
@@ -585,7 +589,7 @@ int fb_main(int argc, char **argv)
     }
 
     if (!strcmp(*argv, "devices")) {
-        fb_list_devices();
+        fb_list_devices(0);
         return 0;
     }
 

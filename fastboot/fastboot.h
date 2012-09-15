@@ -55,7 +55,7 @@ void fb_queue_notice(const char *notice);
 int fb_execute_queue(usb_handle *usb);
 
 int fb_usage();
-int fb_list_devices();
+int fb_list_devices(int device_count);
 int fb_main(int argc,char** argv);
 /* util stuff */
 void die(const char *fmt, ...);

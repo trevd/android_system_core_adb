@@ -66,8 +66,8 @@ char *product_file(const char *extra)
 int print_device_list(char* argv,int device_count,char * device_list[])
 {
         int counter =0 ;
-        // only do strcmp once 
-        int is_devices = strcmp(argv, "devices");
+        // only do strcmp once, hardcore the string length, more secure and less less cycle
+        int is_devices = strncmp(argv, "devices",7);
         if(!is_devices) 
                 printf("List of devices attached\n");
         else
@@ -84,7 +84,9 @@ int print_device_list(char* argv,int device_count,char * device_list[])
                         else // print a numbered list
                             printf("%d %s\n",counter+1,device_list[counter]); 
                 }
+                // get any devices attached to fastboot
                 if(!is_devices) printf("\n");
+		else fb_list_devices(device_count);
                 return 0;
         } else {
                 if(!is_devices) printf("\n");
