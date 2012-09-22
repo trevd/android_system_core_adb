@@ -60,7 +60,7 @@ _adb() {
 
     OPTIONS="-d -e -s -p -i"
     COMMAND="devices connect disconnect push pull sync shell emu logcat lolcat forward jdwp install uninstall bugreport help version start-server kill-server get-state get-serialno status-window
-                remount reboot reboot-bootloader root usb tcpip pu pl fastboot longcat lca lcr"
+                remount reboot reboot-bootloader root usb tcpip pu pl fastboot longcat lca lcr fb sh twr"
 
     case $where in
         OPTIONS|OPT_SERIAL|OPT_PATH)
@@ -89,6 +89,12 @@ _adb() {
                     reboot)
                         if [[ $COMP_CWORD == $i ]]; then
                             args="bootloader recovery"
+                            COMPREPLY=( $(compgen -W "${args}" -- "${COMP_WORDS[i]}") )
+                        fi
+                        ;;
+                     version|ver)
+                        if [[ $COMP_CWORD == $i ]]; then
+                            args="full"
                             COMPREPLY=( $(compgen -W "${args}" -- "${COMP_WORDS[i]}") )
                         fi
                         ;;

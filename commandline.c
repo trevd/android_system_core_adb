@@ -76,7 +76,11 @@ int print_device_list(char* argv,int device_count,char * device_list[])
                 else    
                         printf("List of devices attached - Total %d\n",device_count);
           
-        if(device_count >= 1) {
+        if(device_count == 0) {
+		//  No adb devices, check for fastboot devices
+		if(is_devices) fb_list_devices(device_count);
+	}
+	if(device_count >= 1) {
                 for(counter = 0 ; counter < device_count ; counter ++)
                 {
                         if(!is_devices)
@@ -1036,6 +1040,7 @@ if(argc == 0) {
                 }
                 return send_shellcommand(ttype,serial,buf);
         }
+	
  is_shell_executable(argv[0]);
         //return 0;
  #endif

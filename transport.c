@@ -42,11 +42,11 @@ static void  dump_hex( const unsigned char*  ptr, size_t  len )
     // Build a string instead of logging each character.
     // MAX chars in 2 digit hex, one space, MAX chars, one '\0'.
     char buffer[MAX_DUMP_HEX_LEN *2 + 1 + MAX_DUMP_HEX_LEN + 1 ], *pb = buffer;
-
+    D("Dump Hex Len: %d %s\n",len,ptr);
     if (len2 > MAX_DUMP_HEX_LEN) len2 = MAX_DUMP_HEX_LEN;
 
     for (nn = 0; nn < len2; nn++) {
-        sprintf(pb, "%02x", ptr[nn]);
+        sprintf(pb, "%02x\n", ptr[nn]);
         pb += 2;
     }
     sprintf(pb++, " ");
@@ -127,7 +127,7 @@ dump_packet(const char* name, const char* func, apacket* p)
     else
         snprintf(arg1, sizeof arg1, "0x%x", p->msg.arg1);
 
-    D("%s: %s: [%s] arg0=%s arg1=%s (len=%d) ",
+    D("dump_packet:%s: %s: [%s] arg0=%s arg1=%s (len=%d) ",
         name, func, cmd, arg0, arg1, len);
     dump_hex(p->data, len);
 }
@@ -150,7 +150,7 @@ read_packet(int  fd, const char* name, apacket** ppacket)
             len -= r;
             p   += r;
         } else {
-            D("%s: read_packet (fd=%d), error ret=%d errno=%d: %s\n", name, fd, r, errno, strerror(errno));
+            D("read_packet:%s: read_packet (fd=%d), error ret=%d errno=%d: %s\n", name, fd, r, errno, strerror(errno));
             if((r < 0) && (errno == EINTR)) continue;
             return -1;
         }
@@ -995,6 +995,7 @@ int readx(int fd, void *ptr, size_t len)
 #endif
     D("readx: fd=%d wanted=%d\n", fd, (int)len);
     while(len > 0) {
+	D("readx: mickey love\n");
         r = adb_read(fd, p, len);
         if(r > 0) {
             len -= r;
