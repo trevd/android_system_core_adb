@@ -73,13 +73,23 @@ int is_server_control_command(char* argv)
     }
     return -1;
 }
-
+/*
+ *  get_device_list : gets a list of devices in adb and fastboot modes
+ */
 int get_device_list(char*** outputlist)
 {
-	char *tmp ;
+	
+	char* tmp ,*tmp1 ;
 	tmp = adb_query("host:devices");
+	tmp1 =list_fastboot_devices();
+	//printf("tmp1 %d=%s\n",strlen(tmp1),tmp1);
+	char* buffer = malloc(strlen(tmp1)+strlen(tmp)+1) ;
+	strcpy(buffer,tmp);
+	strcat(buffer,tmp1);
        	int device_count = 0;
-        device_count = strtolist(tmp,outputlist);
+	//printf("buffer=%s",buffer);
+	
+        device_count = strtolist(buffer,outputlist);
         return device_count;
 }
 char *get_serial_from_index(int index)
@@ -89,7 +99,7 @@ char *get_serial_from_index(int index)
 	tmp = adb_query("host:devices");
        	int device_count = 0;
         if(tmp) device_count = get_device_list(&device_list);//strtolist(tmp,&device_list);
-	 fb_list_devices(device_count);
+	
        	if(index > device_count){
        		fprintf(stderr,"error: index out of range\n");
        		return NULL;

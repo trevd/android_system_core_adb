@@ -45,7 +45,7 @@
 char cur_product[FB_RESPONSE_SZ + 1];
 
 void bootimg_set_cmdline(boot_img_hdr *h, const char *cmdline);
-
+char* find_usb_device_string();
 boot_img_hdr *mkbootimg(void *kernel, unsigned kernel_size,
                         void *ramdisk, unsigned ramdisk_size,
                         void *second, unsigned second_size,
@@ -56,7 +56,6 @@ static usb_handle *usb = 0;
 static const char *serial = 0;
 static const char *product = 0;
 static const char *cmdline = 0;
-static int wipe_data = 0;
 static unsigned short vendor_id = 0;
 
 static unsigned base_addr = 0x10000000;
@@ -147,10 +146,9 @@ oops:
     return 0;
 }
 #endif
-int connected_device_count = 0;
 int match_fastboot(usb_ifc_info *info)
 {
-    //rintf("Match Fastboot:%x %x\n",info->dev_vendor,info->dev_product);	
+   // printf("Match Fastboot:%x %x\n",info->dev_vendor,info->dev_product);	
     if(!(vendor_id && (info->dev_vendor == vendor_id)) &&
        (info->dev_vendor != 0x18d1) &&  // Google
        (info->dev_vendor != 0x8087) &&  // Intel
@@ -186,10 +184,12 @@ int list_devices_callback(usb_ifc_info *info)
             serial = "????????????";
         }
         // output compatible with "adb devices"
-        connected_device_count ++;
-        printf("%d %s\tfastboot\n",connected_device_count,serial);
+        // connected_device_count ++;
+//         // printf("%d %s\tfastboot\n",connected_device_count,serial);
+        // found a fastboot device
+	return -2;
     }
-
+    // no fastboot device found 
     return -1;
 }
 
@@ -210,12 +210,23 @@ usb_handle *open_device(void)
         sleep(1);
     }
 }
-
-int fb_list_devices(int device_count) {
+char* list_fastboot_devices() {
     // We don't actually open a USB device here,
     // just getting our callback called so we can
     // list all the connected devices.
-    connected_device_count = device_count;
+    // We don't actually open a USB device here,
+    // just getting our callback called so we can
+    // list all the connected devices.
+   // printf(" list_fastboot_devices\n");
+     return find_usb_device_string("/dev/bus/usb", list_devices_callback);
+  
+
+}
+
+int fb_list_devices() {
+    // We don't actually open a USB device here,
+    // just getting our callback called so we can
+    // list all the connected devices.
     usb_open(list_devices_callback);
     return 0;
 }
@@ -556,7 +567,7 @@ void do_flashall(void)
 
 int do_oem_command(int argc, char **argv)
 {
-    int i;
+ 
     char command[256];
     if (argc <= 1) return 0;
 

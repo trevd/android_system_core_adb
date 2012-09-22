@@ -67,8 +67,8 @@ int print_device_list(char* argv,int device_count,char * device_list[])
 {
         int counter =0 ;
         // only do strcmp once, hardcore the string length, more secure and less less cycle
-        int is_devices = strncmp(argv, "devices",7);
-        if(!is_devices) 
+        int is_normal_device_command = !strncmp(argv, "devices",7);
+        if(is_normal_device_command) 
                 printf("List of devices attached\n");
         else
                 if(!strcmp(argv, "select"))
@@ -78,22 +78,22 @@ int print_device_list(char* argv,int device_count,char * device_list[])
           
         if(device_count == 0) {
 		//  No adb devices, check for fastboot devices
-		if(is_devices) fb_list_devices(device_count);
+		if(!is_normal_device_command) fb_list_devices();
 	}
 	if(device_count >= 1) {
                 for(counter = 0 ; counter < device_count ; counter ++)
                 {
-                        if(!is_devices)
+                        if(is_normal_device_command)
                                 printf("%s\n",device_list[counter]);
                         else // print a numbered list
                             printf("%d %s\n",counter+1,device_list[counter]); 
                 }
                 // get any devices attached to fastboot
-                if(!is_devices) printf("\n");
-		else fb_list_devices(device_count);
+                if(is_normal_device_command) printf("\n");
+		else fb_list_devices();
                 return 0;
         } else {
-                if(!is_devices) printf("\n");
+                if(is_normal_device_command) printf("\n");
                         return 1;
         }
         return 0;

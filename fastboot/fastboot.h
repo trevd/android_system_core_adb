@@ -36,6 +36,7 @@ int fb_command(usb_handle *usb, const char *cmd);
 int fb_command_response(usb_handle *usb, const char *cmd, char *response);
 int fb_download_data(usb_handle *usb, const void *data, unsigned size);
 char *fb_get_error(void);
+char* list_fastboot_devices();
 
 #define FB_COMMAND_SZ 64
 #define FB_RESPONSE_SZ 64
@@ -55,7 +56,7 @@ void fb_queue_notice(const char *notice);
 int fb_execute_queue(usb_handle *usb);
 
 int fb_usage();
-int fb_list_devices(int device_count);
+int fb_list_devices();
 int fb_main(int argc,char** argv);
 /* util stuff */
 void die(const char *fmt, ...);

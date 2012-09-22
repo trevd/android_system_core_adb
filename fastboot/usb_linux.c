@@ -53,7 +53,7 @@
 
 #define MAX_RETRIES 5
 #define TRACE_TAG TRACE_FASTBOOT
-#define TRACE_USB
+//#define TRACE_USB
 #ifdef TRACE_USB
 #define DBG1(x...) fprintf(stderr, x)
 #define D(x...) fprintf(stderr, x)
@@ -99,7 +99,7 @@ static int check(void *_desc, int len, unsigned type, int size)
 
 static int filter_usb_device(int fd, char *ptr, int len, int writable,
                              ifc_match_func callback,
-                             int *ept_in_id, int *ept_out_id, int *ifc_id)
+                             int *ept_in_id, int *ept_out_id, int *ifc_id,char* serial)
 {
     struct usb_device_descriptor *dev;
     struct usb_config_descriptor *cfg;
@@ -107,7 +107,7 @@ static int filter_usb_device(int fd, char *ptr, int len, int writable,
     struct usb_endpoint_descriptor *ept;
     struct usb_ifc_info info;
 
-    int in, out;
+    int in, out , cbres;
     unsigned i;
     unsigned e;
 
@@ -129,10 +129,11 @@ static int filter_usb_device(int fd, char *ptr, int len, int writable,
     info.dev_subclass = dev->bDeviceSubClass;
     info.dev_protocol = dev->bDeviceProtocol;
     info.writable = writable;
-
+   // DBG("[ info dev_vendor:%4x dev_product:%4x dev_class:%d dev_subclass:%d dev_protocol:%d ]\n", info.dev_vendor,    info.dev_product, info.dev_class ,info.dev_subclass , info.dev_protocol);
     // read device serial number (if there is one)
     info.serial_number[0] = 0;
     if (dev->iSerialNumber) {
+	// DBG("[ dev->iSerialNumber:%d ]\n",dev->iSerialNumber);
         struct usbdevfs_ctrltransfer  ctrl;
         // Keep it short enough because some bootloaders are borked if the URB len is > 255
         // 128 is too big by 1.
@@ -158,7 +159,9 @@ static int filter_usb_device(int fd, char *ptr, int len, int writable,
             for (i = 1; i < result; i++)
                 info.serial_number[i - 1] = buffer[i];
             info.serial_number[i - 1] = 0;
+	//DBG("[ info serial_number:%s ]\n",info.serial_number);
         }
+       
     }
 
     for(i = 0; i < cfg->bNumInterfaces; i++) {
@@ -193,18 +196,84 @@ static int filter_usb_device(int fd, char *ptr, int len, int writable,
 
         info.has_bulk_in = (in != -1);
         info.has_bulk_out = (out != -1);
-
-        if(callback(&info) == 0) {
+	cbres= callback(&info) ;
+	if(cbres == -2) {
+		if(serial != NULL ){
+			strcpy(serial,info.serial_number);
+		}
+		return -2;
+	}
+        if(cbres == 0) {
+	    
             *ept_in_id = in;
             *ept_out_id = out;
             *ifc_id = ifc->bInterfaceNumber;
             return 0;
         }
+        
+	
     }
-
+    
     return -1;
 }
+char *find_usb_device_string(const char *base, ifc_match_func callback)
+{
+    usb_handle *usb = 0;
+    char serial[1024] ;
+    char serialout[1024];
+    char busname[64], devname[64];
+    char desc[1024];
+    int n, in, out, ifc;
 
+    DIR *busdir, *devdir;
+    struct dirent *de;
+    int fd;
+    int writable;
+   // printf("find_usb_device:base=%s\n",base);
+    busdir = opendir(base);
+    if(busdir == 0) return 0;
+
+    while((de = readdir(busdir)) && (usb == 0)) {
+        if(badname(de->d_name)) continue;
+
+        sprintf(busname, "%s/%s", base, de->d_name);
+        devdir = opendir(busname);
+        if(devdir == 0) continue;
+
+     //   DBG("[ scanning %s ]\n", busname);
+        while((de = readdir(devdir)) && (usb == 0)) {
+
+            if(badname(de->d_name)) continue;
+            sprintf(devname, "%s/%s", busname, de->d_name);
+
+          
+            writable = 1;
+            if((fd = open(devname, O_RDWR)) < 0) {
+                // Check if we have read-only access, so we can give a helpful
+                // diagnostic like "adb devices" does.
+                writable = 0;
+                if((fd = open(devname, O_RDONLY)) < 0) {
+                    continue;
+                }
+            }
+
+            n = read(fd, desc, sizeof(desc));
+            if(filter_usb_device(fd, desc, n, writable, callback,
+                                 &in, &out, &ifc,serial) == -2) {
+		    sprintf(serialout,"%s%s\tfastboot\n",serialout,serial);
+		  //  free(&serial);
+		    
+		    
+		   
+                close(fd);
+            }
+        }
+        closedir(devdir);
+    }
+    closedir(busdir);
+    //sprintf("serialout:%s\n",serialout);
+    return serialout;	
+}
 static usb_handle *find_usb_device(const char *base, ifc_match_func callback)
 {
     usb_handle *usb = 0;
@@ -216,7 +285,7 @@ static usb_handle *find_usb_device(const char *base, ifc_match_func callback)
     struct dirent *de;
     int fd;
     int writable;
-    printf("find_usb_device:base=%s\n",base);
+   // printf("find_usb_device:base=%s\n",base);
     busdir = opendir(base);
     if(busdir == 0) return 0;
 
@@ -227,13 +296,13 @@ static usb_handle *find_usb_device(const char *base, ifc_match_func callback)
         devdir = opendir(busname);
         if(devdir == 0) continue;
 
-        DBG("[ scanning %s ]\n", busname);
+     //   DBG("[ scanning %s ]\n", busname);
         while((de = readdir(devdir)) && (usb == 0)) {
 
             if(badname(de->d_name)) continue;
             sprintf(devname, "%s/%s", busname, de->d_name);
 
-            DBG("[ scanning %s ]\n", devname);
+          
             writable = 1;
             if((fd = open(devname, O_RDWR)) < 0) {
                 // Check if we have read-only access, so we can give a helpful
@@ -247,9 +316,11 @@ static usb_handle *find_usb_device(const char *base, ifc_match_func callback)
             n = read(fd, desc, sizeof(desc));
 
             if(filter_usb_device(fd, desc, n, writable, callback,
-                                 &in, &out, &ifc) == 0) {
+                                 &in, &out, &ifc,NULL) == 0) {
+		//
                 usb = calloc(1, sizeof(usb_handle));
                 strcpy(usb->fname, devname);
+		DBG("[ find_usb_device:devname=%s ]\n",devname);
                 usb->ep_in = in;
                 usb->ep_out = out;
                 usb->desc = fd;
@@ -268,7 +339,7 @@ static usb_handle *find_usb_device(const char *base, ifc_match_func callback)
         closedir(devdir);
     }
     closedir(busdir);
-
+  
     return usb;
 }
 
