@@ -98,6 +98,12 @@ _adb() {
                             COMPREPLY=( $(compgen -W "${args}" -- "${COMP_WORDS[i]}") )
                         fi
                         ;;
+		    help)
+                        if [[ $COMP_CWORD == $i ]]; then
+                            args="all keycodes fastboot"
+                            COMPREPLY=( $(compgen -W "${args}" -- "${COMP_WORDS[i]}") )
+                        fi
+                        ;;
                     shell|sh)
                         _adb_cmd_shell "$serial" $i
                         ;;

@@ -18,6 +18,8 @@ int kill_server();
 int is_server_control_command(char* argv);
 int get_device_list(char*** outputlist);
 int is_adb_device_command(int argc,char* argv[]);
+//int do_fastboot_command(char* argv[]);
+int is_fastboot_command(char* command);
 char *gProductOutPath;
 #endif 
 

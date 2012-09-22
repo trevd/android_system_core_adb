@@ -997,6 +997,7 @@ if(argc == 0) {
            
            
        }   
+        if(is_fastboot_command(argv[0])) return 0;
        
        int real_keycode =process_input_command(argc,argv);
        D("real keycode=%d\n",real_keycode);

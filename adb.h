@@ -342,7 +342,8 @@ typedef enum {
     TRACE_SYSDEPS,
     TRACE_JDWP,      /* 0x100 */
     TRACE_SERVICES,
-    TRACE_EXTENDED
+    TRACE_EXTENDED,
+    TRACE_FASTBOOT
 } AdbTrace;
 
 #if ADB_TRACE

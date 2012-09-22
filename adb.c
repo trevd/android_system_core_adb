@@ -94,6 +94,7 @@ void  adb_trace_init(void)
         { "jdwp", TRACE_JDWP },
         { "services", TRACE_SERVICES },
         { "extended", TRACE_EXTENDED },
+	{ "fastboot", TRACE_FASTBOOT },
         { NULL, 0 }
     };
 

@@ -52,12 +52,15 @@
 #include "usb.h"
 
 #define MAX_RETRIES 5
-
+#define TRACE_TAG TRACE_FASTBOOT
+#define TRACE_USB
 #ifdef TRACE_USB
 #define DBG1(x...) fprintf(stderr, x)
+#define D(x...) fprintf(stderr, x)
 #define DBG(x...) fprintf(stderr, x)
 #else
 #define DBG(x...)
+#define D(x...) 
 #define DBG1(x...)
 #endif
 
@@ -213,7 +216,7 @@ static usb_handle *find_usb_device(const char *base, ifc_match_func callback)
     struct dirent *de;
     int fd;
     int writable;
-
+    printf("find_usb_device:base=%s\n",base);
     busdir = opendir(base);
     if(busdir == 0) return 0;
 
@@ -224,13 +227,13 @@ static usb_handle *find_usb_device(const char *base, ifc_match_func callback)
         devdir = opendir(busname);
         if(devdir == 0) continue;
 
-//        DBG("[ scanning %s ]\n", busname);
+        DBG("[ scanning %s ]\n", busname);
         while((de = readdir(devdir)) && (usb == 0)) {
 
             if(badname(de->d_name)) continue;
             sprintf(devname, "%s/%s", busname, de->d_name);
 
-//            DBG("[ scanning %s ]\n", devname);
+            DBG("[ scanning %s ]\n", devname);
             writable = 1;
             if((fd = open(devname, O_RDWR)) < 0) {
                 // Check if we have read-only access, so we can give a helpful

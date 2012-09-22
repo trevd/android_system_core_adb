@@ -39,9 +39,27 @@ int run_settings(transport_type transport, char* serial)
     return 0;
     
 }
+int is_fastboot_command(char* command)
+{
+	if(!strcmp(command, "update") || !strcmp(command, "flashall") ||
+		!strcmp(command, "flash") || !strcmp(command, "erase") ||
+		!strcmp(command, "format") || !strcmp(command, "getvar") ||
+		!strcmp(command, "flash:raw") || !strcmp(command, "continue") ||
+		!strcmp(command, "reboot-bootloader")){ 
+		
+			D("is_fastboot_command:fastboot command found:%s\n",command);
+			return 1;
+		}
+	return 0;
+}
+int do_fastboot_command(transport_type transport, char* serial)
+{
+	D("do_fastboot_command\n");
+	return 0;
+}
 int is_server_control_command(char* argv)
 {
-    D("is_server_control_command: %s",argv);
+    D("is_server_control_command: %s\n",argv);
     if(!strcmp(argv, "kill-server") || !strcmp(argv, "kill")) {
         return kill_server();
     }
