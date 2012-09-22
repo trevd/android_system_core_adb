@@ -997,7 +997,15 @@ if(argc == 0) {
            
            
        }   
-        if(is_fastboot_command(argv[0])) return 0;
+       if(is_fastboot_command(argv[0])) {
+	if(argc == 1) return fb_usage();
+ 	if((argc >= 2)) {// && (!strncmp(argv[1],"devices",strlen("devices")))){
+ 		printf("argv:%s\n",argv[0]);
+		return fb_main(argc,argv);
+		}
+	
+        return 0;
+    }
        
        int real_keycode =process_input_command(argc,argv);
        D("real keycode=%d\n",real_keycode);
@@ -1122,6 +1130,7 @@ if(argc == 0) {
         } else {
             return 0;
         }
+    
     }
 
     if(!strcmp(argv[0], "remount") || !strcmp(argv[0], "reboot") 
@@ -1352,15 +1361,7 @@ if(argc == 0) {
         return 0;
     }
     
-    if(!strcmp(argv[0],"fb")) {
-	if(argc == 1) return fb_usage();
- 	if((argc >= 2)) {// && (!strncmp(argv[1],"devices",strlen("devices")))){
- 		printf("List\n");
-		return fb_main(argc--,argv++);
-		}
-	
-        return 0;
-    }
+
     if(!strcmp(argv[0],"mount")) {
         do_shellcommand(ttype, serial,"mount",NULL);
         return 0;

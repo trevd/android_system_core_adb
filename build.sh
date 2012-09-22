@@ -15,7 +15,7 @@ if [ ! -z "$?" ] ; then
    echo "starting adb"
    adb start-server
    . bash_completion/adb.bash
-
+   cp bash_completion/adb.bash /etc/bash_completion.d/adb.bash
 fi 
 
 

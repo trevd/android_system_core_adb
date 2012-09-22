@@ -593,7 +593,8 @@ int fb_main(int argc, char **argv)
     unsigned page_size = 2048;
     int status;
 
-    skip(1);
+    //skip(1);
+    printf("cmp:%d\n",argc);
     if (argc == 0) {
         fb_usage();
         return 1;
@@ -608,7 +609,7 @@ int fb_main(int argc, char **argv)
         fb_usage();
         return 0;
     }
-
+    printf("cmp:%s\n",argv[0]);
 
     serial = getenv("ANDROID_SERIAL");
 
@@ -648,7 +649,7 @@ int fb_main(int argc, char **argv)
             vendor_id = (unsigned short)val;
             skip(2);
         } else if(!strcmp(*argv, "getvar")) {
-            require(2);
+            //require();
             fb_queue_display(argv[1], argv[1]);
             skip(2);
         } else if(!strcmp(*argv, "erase")) {
@@ -674,6 +675,7 @@ int fb_main(int argc, char **argv)
             wants_reboot_bootloader = 1;
             skip(1);
         } else if (!strcmp(*argv, "continue")) {
+	    
             fb_queue_command("continue", "resuming boot");
             skip(1);
         } else if(!strcmp(*argv, "boot")) {

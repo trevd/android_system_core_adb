@@ -82,14 +82,14 @@ int get_device_list(char*** outputlist)
 	char* tmp ,*tmp1 ;
 	tmp = adb_query("host:devices");
 	tmp1 =list_fastboot_devices();
-	//printf("tmp1 %d=%s\n",strlen(tmp1),tmp1);
+	D("tmp %d=%s\n",strlen(tmp),tmp);
 	char* buffer = malloc(strlen(tmp1)+strlen(tmp)+1) ;
+	// combine fastboot and normal devices into one string
 	strcpy(buffer,tmp);
 	strcat(buffer,tmp1);
        	int device_count = 0;
-	//printf("buffer=%s",buffer);
-	
         device_count = strtolist(buffer,outputlist);
+	free(buffer);
         return device_count;
 }
 char *get_serial_from_index(int index)
