@@ -60,7 +60,7 @@ _adb() {
 
     OPTIONS="-d -e -s -p -i"
     COMMAND="devices connect disconnect push pull sync shell emu logcat lolcat forward jdwp install uninstall bugreport help version start-server kill-server get-state get-serialno status-window
-                remount reboot reboot-bootloader root usb tcpip pu pl fastboot longcat lca lcr fb sh twr flash flashall update continue erase format getvar boot flash:raw"
+                recovery remount reboot reboot-bootloader root usb tcpip pu pl fastboot longcat lca lcr fb sh twr flash flashall update continue erase format getvar boot flash:raw"
 
     case $where in
         OPTIONS|OPT_SERIAL|OPT_PATH)
@@ -102,6 +102,8 @@ _adb() {
                         if [[ $COMP_CWORD == $i ]]; then
                             args="recovery boot system cache userdata"
                             COMPREPLY=( $(compgen -W "${args}" -- "${COMP_WORDS[i]}") )
+                            cur="${COMP_WORDS[COMP_CWORD]}"
+                            
                         fi
                         ;;
 		    help)

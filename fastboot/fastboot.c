@@ -594,7 +594,7 @@ int fb_main(int argc, char **argv)
     int status;
 
     //skip(1);
-    printf("cmp:%d\n",argc);
+    //printf("cmp:%d\n",argc);
     if (argc == 0) {
         fb_usage();
         return 1;
@@ -609,7 +609,7 @@ int fb_main(int argc, char **argv)
         fb_usage();
         return 0;
     }
-    printf("cmp:%s\n",argv[0]);
+    //printf("cmp:%s\n",argv[0]);
 
     serial = getenv("ANDROID_SERIAL");
 

@@ -937,7 +937,7 @@ if(argc == 0) {
     int device_count = get_device_list(&device_list);
     if(!strcmp(argv[0], "devices") || !strcmp(argv[0], "dev") || !strcmp(argv[0], "lsdev") || !strcmp(argv[0], "lsadb")) {
         return print_device_list(argv[0],device_count,device_list);
-         
+ 
     }
     
 
@@ -998,13 +998,13 @@ if(argc == 0) {
            
        }   
        if(is_fastboot_command(argv[0])) {
-	if(argc == 1) return fb_usage();
- 	if((argc >= 2)) {// && (!strncmp(argv[1],"devices",strlen("devices")))){
- 		printf("argv:%s\n",argv[0]);
+	//if(argc == 1) return fb_usage();
+ 	//if((argc >= 2)) {// && (!strncmp(argv[1],"devices",strlen("devices")))){
+ 		D("argv:%s\n",argv[0]);
 		return fb_main(argc,argv);
-		}
+	//	}
 	
-        return 0;
+        //return 0;
     }
        
        int real_keycode =process_input_command(argc,argv);

@@ -24,6 +24,8 @@
 
 #define MAX_STRING_LENGTH 512
 #define MAX_TOKS 512
+
+
 int run_play(transport_type transport, char* serial)
 {
    char buf[256];
@@ -75,18 +77,22 @@ int is_server_control_command(char* argv)
 }
 /*
  *  get_device_list : gets a list of devices in adb and fastboot modes
+ * 	parameters: outputlist pointer to an empty char* [] which will be 
+ *			populated with a list of currently connected devices
+ *
+ * returns: int containing the number of connected devices 
  */
 int get_device_list(char*** outputlist)
 {
-	
-	char* tmp ,*tmp1 ;
-	tmp = adb_query("host:devices");
-	tmp1 =list_fastboot_devices();
-	D("tmp %d=%s\n",strlen(tmp),tmp);
-	char* buffer = malloc(strlen(tmp1)+strlen(tmp)+1) ;
-	// combine fastboot and normal devices into one string
-	strcpy(buffer,tmp);
-	strcat(buffer,tmp1);
+	// we should be able to use the fastboot 
+	char* adb_devices ,* fastboot_devices ;
+	adb_devices = adb_query("host:devices");
+	fastboot_devices = list_fastboot_devices();
+	D("adb_devices %d=%s\n",strlen(adb_devices),adb_devices);
+	D("fastboot_devices %d=%s\n",strlen(fastboot_devices),fastboot_devices);
+	char* buffer = malloc(strlen(adb_devices)+strlen(fastboot_devices)+1) ;
+	strcpy(buffer,adb_devices);
+	strcat(buffer,fastboot_devices);
        	int device_count = 0;
         device_count = strtolist(buffer,outputlist);
 	free(buffer);

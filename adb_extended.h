@@ -21,5 +21,9 @@ int is_adb_device_command(int argc,char* argv[]);
 //int do_fastboot_command(char* argv[]);
 int is_fastboot_command(char* command);
 char *gProductOutPath;
+struct device {
+	char* serial ;
+	int state ;
+} connected_device ;
 #endif 
 
