@@ -216,11 +216,11 @@ static int filter_usb_device(int fd, char *ptr, int len, int writable,
     
     return -1;
 }
+char serialout[1024];
 char *find_usb_device_string(const char *base, ifc_match_func callback)
 {
     usb_handle *usb = 0;
     char serial[1024] ;
-    char serialout[1024];
     char busname[64], devname[64];
     char desc[1024];
     int n, in, out, ifc;
@@ -229,7 +229,7 @@ char *find_usb_device_string(const char *base, ifc_match_func callback)
     struct dirent *de;
     int fd;
     int writable;
-   // printf("find_usb_device:base=%s\n",base);
+   //printf("find_usb_device:base=%s\n",base);
     busdir = opendir(base);
     if(busdir == 0) return 0;
 
@@ -271,7 +271,7 @@ char *find_usb_device_string(const char *base, ifc_match_func callback)
         closedir(devdir);
     }
     closedir(busdir);
-    //sprintf("serialout:%s\n",serialout);
+ //   sprintf("serialout:%s\n",serialout);
     return serialout;	
 }
 static usb_handle *find_usb_device(const char *base, ifc_match_func callback)

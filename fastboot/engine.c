@@ -276,7 +276,6 @@ int fb_format(Action *a, usb_handle *usb, int skip_if_not_supported)
     int status = 0;
     struct image_data image;
     struct generator *generator = NULL;
-    int fd;
     unsigned i;
     char cmd[CMD_SIZE];
 
@@ -376,9 +375,9 @@ void fb_queue_flash(const char *ptn, void *data, unsigned sz)
 
 static int match(char *str, const char **value, unsigned count)
 {
-    const char *val;
+
     unsigned n;
-    int len;
+
 
     for (n = 0; n < count; n++) {
         const char *val = value[n];

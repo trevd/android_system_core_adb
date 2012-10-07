@@ -45,7 +45,7 @@
 char cur_product[FB_RESPONSE_SZ + 1];
 
 void bootimg_set_cmdline(boot_img_hdr *h, const char *cmdline);
-char* find_usb_device_string();
+char *find_usb_device_string(const char *base, ifc_match_func callback);
 boot_img_hdr *mkbootimg(void *kernel, unsigned kernel_size,
                         void *ramdisk, unsigned ramdisk_size,
                         void *second, unsigned second_size,
@@ -148,7 +148,7 @@ oops:
 #endif
 int match_fastboot(usb_ifc_info *info)
 {
-   // printf("Match Fastboot:%x %x\n",info->dev_vendor,info->dev_product);	
+   //printf("Match Fastboot:vendor_id %x %x %x\n",vendor_id ,info->dev_vendor,info->dev_product);	
     if(!(vendor_id && (info->dev_vendor == vendor_id)) &&
        (info->dev_vendor != 0x18d1) &&  // Google
        (info->dev_vendor != 0x8087) &&  // Intel
@@ -163,17 +163,24 @@ int match_fastboot(usb_ifc_info *info)
        (info->dev_vendor != 0x0b05) &&  // Asus
        (info->dev_vendor != 0x0bb4))    // HTC
             return -1;
+	    
+	  
     if(info->ifc_class != 0xff) return -1;
     if(info->ifc_subclass != 0x42) return -1;
     if(info->ifc_protocol != 0x03) return -1;
     // require matching serial number if a serial number is specified
     // at the command line with the -s option.
+    
     if (serial && strcmp(serial, info->serial_number) != 0) return -1;
     return 0;
 }
 
 int list_devices_callback(usb_ifc_info *info)
 {
+	if (!info){
+		return -1;
+	}
+		
     if (match_fastboot(info) == 0) {
         char* serial = info->serial_number;
 	
@@ -189,7 +196,9 @@ int list_devices_callback(usb_ifc_info *info)
         // found a fastboot device
 	return -2;
     }
+    
     // no fastboot device found 
+    
     return -1;
 }
 
@@ -217,9 +226,14 @@ char* list_fastboot_devices() {
     // We don't actually open a USB device here,
     // just getting our callback called so we can
     // list all the connected devices.
-   // printf(" list_fastboot_devices\n");
-     return find_usb_device_string("/dev/bus/usb", list_devices_callback);
-  
+    //printf(" list_fastboot_devices\n");
+    char* retchar = {"\0"};
+    retchar = find_usb_device_string("/dev/bus/usb", list_devices_callback);
+    //if(retchar)
+	//    printf("RetChar  %d\n",strlen(retchar));
+    
+    
+     return retchar ;
 
 }
 
@@ -227,6 +241,7 @@ int fb_list_devices() {
     // We don't actually open a USB device here,
     // just getting our callback called so we can
     // list all the connected devices.
+    //printf("Fub\n");
     usb_open(list_devices_callback);
     return 0;
 }
