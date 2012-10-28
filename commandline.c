@@ -1056,7 +1056,7 @@ if(argc == 0) {
 
    
 
-    if(!strcmp(argv[0], "shell") || !strcmp(argv[0], "hell") || !strcmp(argv[0], "sh")) {
+    if(!strcmp(argv[0], "shell") || !strcmp(argv[0], "hell") || !strcmp(argv[0], "sh") || !strcmp(argv[0], "s")) {
         int r;
         int fd;
 	
