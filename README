@@ -18,6 +18,12 @@ adb svc-start or adb st = adb shell start
 adb svc-stop or adb ks = adb shell stop
 ... plus many more 
 
+UltraLazy one Letter commads
+Symlink adb to the a single letter a, ln -s $ADB_PATH/adb a 
+To drop into an interactove shell or run a target command fromn the the host run the following command, respectivily
+a s := adb shell 
+a s <command>= adb shell 
+
 Send Keyevents:
 You can send all keycodes by name to the device - this is a shortcut to
 adb shell input keyevent <key_code> 
