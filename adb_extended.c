@@ -17,6 +17,7 @@ struct command_shortcut {
 					{ "mount",1,1,1,{"mount"}},
 					{ "gp",1,0,1,{"getprop"}},
 					{ "recovery",2,0,0,{"reboot","recovery"}},
+					{ "ll",2,1,1,{"ls","-l"}},
 					{ "lca",9,0,0,{"logcat","-b","system","-b","radio","-b","events","-b","main" }}} ;
 
 static const int shortcut_total = ARRAYSIZE(shortcuts);
@@ -61,8 +62,8 @@ int is_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 		//printf("Shortcut Found %d %s\n",shortcut_index,shortcuts[shortcut_index].full_version[0]);
 		// build our argc and argv 		
 
-		// check to see if we should appedn passed args 
-		 int token_total = shortcuts[shortcut_index].token_total;
+		// check to see if we should append passed args 
+		int token_total = shortcuts[shortcut_index].token_total; int new_argc_position =0;
 		*new_argc = token_total;
 		if(shortcuts[shortcut_index].process_args) *new_argc += (argc-1);
 		if(shortcuts[shortcut_index].is_shell) *new_argc += 1 ; 
@@ -70,20 +71,19 @@ int is_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 		
 		printf("new_argc %d argc:%d process:%d is_shell:%d\n",*new_argc,argc,shortcuts[shortcut_index].process_args,shortcuts[shortcut_index].is_shell);
 		(*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
-		counter = 0;
 		if(shortcuts[shortcut_index].is_shell){
-			printf("add shell\n");
-			(*new_argv) [counter] = "shell";
+			(*new_argv) [new_argc_position] = "shell";
+			new_argc_position += 1;
 		}
-		printf("counter %d\n",counter);	
 		for(counter = 0; counter < token_total ; counter ++){
-			(*new_argv) [counter+shortcuts[shortcut_index].is_shell] = shortcuts[shortcut_index].full_version[counter];
+			(*new_argv) [counter+new_argc_position] = shortcuts[shortcut_index].full_version[counter];
 		}
-
+		printf("counter:%d argc:%d\n",counter,argc);
+		new_argc_position = counter;
 		if(shortcuts[shortcut_index].process_args){
 			// append args if we need to
-			for(counter = 1 ; counter < argc;counter++){
-				(*new_argv)[counter] = argv[counter];
+			for(counter = 1; counter < argc;counter++){
+				(*new_argv)[counter+new_argc_position] = argv[counter];
 			}
 		}
 		print_args(*new_argc,(*new_argv));
