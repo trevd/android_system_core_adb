@@ -137,7 +137,7 @@ int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv
 		*new_argc = 4 ;
 		(*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
 		
-		(*new_argv)[0] = "shell"; (*new_argv)[1] = "input" ; (*new_argv)[2] = "keyevent"; (*new_argv)[3] = keyevents[keyevent_index].name;
+		(*new_argv)[0] = "shell"; (*new_argv)[1] = "input" ; (*new_argv)[2] = "keyevent"; (*new_argv)[3] = keyevents[keyevent_index].keycode;
 		int argc_counter = argc_position; 
 		for(argc_counter = argc_position;argc_counter<(argc); argc_counter++){
 			printf("counter=%d : pos=%d : argv[%d]=%s\n",argc_counter,argc_position,argc_position,argv[argc_position]);
@@ -225,7 +225,8 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 				new_argc_position++;
 			}
 		}
-		print_args(*new_argc,(*new_argv));
+		printf("\n");
+		//print_args(*new_argc,(*new_argv));
 		return 1;
 	}
 	return 0;
