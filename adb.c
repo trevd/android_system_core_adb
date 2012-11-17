@@ -1538,11 +1538,13 @@ int main(int argc, char **argv)
 #if ADB_HOST
     adb_sysdeps_init();
     adb_trace_init();
+
+	// pre-process the command line 
     D("Handling commandline()\n");
 	int new_argc = 0;
 	char **new_argv=NULL;
 	adb_extended_commandline(argc - 1, argv + 1, &new_argc,&new_argv);
-	printf("new_argc:%d\n",new_argc);
+	//printf("new_argc:%d\n",new_argc);
     return adb_commandline(new_argc, new_argv);
 #else
     /* If adbd runs inside the emulator this will enable adb tracing via
