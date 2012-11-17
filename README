@@ -5,4 +5,19 @@ For Help Details see first_attempt branch
 Notes: 
 I've restructed how the extensions hook , this is to minimize
 the changes made to existing code and allow updated versions to be 
-easily integrated 
+easily integrated.
+
+Patching into new versions:
+
+adb.c - change the main function to add command line pre-processing 
+
+    D("Handling commandline()\n");
+	int new_argc = 0; char **new_argv=NULL;
+	adb_extended_commandline(argc - 1, argv + 1, &new_argc,&new_argv);
+    return adb_commandline(new_argc, new_argv);
+
+adb.h - add definition for the extended_commandline function
+	adb_extended_commandline(argc - 1, argv + 1, &new_argc,&new_argv);
+
+
+
