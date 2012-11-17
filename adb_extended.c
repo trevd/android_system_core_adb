@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/sysinfo.h>
+#include <sys/types.h>
 #include "sysdeps.h"
 #include "adb.h"
 
@@ -42,8 +44,14 @@ struct command_shortcut {
 					{ "gp",1,1,1,{"getprop"}},
 					{ "sp",1,1,1,{"setprop"}},
 					{ "cat",1,1,1,{"cat"}},
+					{ "c",1,1,1,{"cat"}},
 					{ "echo",1,1,1,{"echo"}},
 					{ "ps",1,0,1,{"ps"}},
+					{ "mv",1,1,1,{"mv"}},
+					{ "cp",1,1,1,{"cp"}},
+					{ "rm",1,1,1,{"rm"}},
+					{ "touch",1,1,1,{"touch"}},
+					{ "lsusb",1,1,1,{"lsusb"}},
 					{ "grp",1,1,1,{"getprop | grep"}},
 					{ "wp",1,0,1,{"watchprops"}},
 					{ "chmod",1,1,1,{"chmod"}},
@@ -69,7 +77,7 @@ struct command_shortcut {
 					{ "lc",1,1,0,{"logcat"}},
 					{ "temp-root",1,0,1,{"echo 'ro.kernel.qemu=1'>/data/local.prop"}},
 					{ "un-root",1,0,1,{"echo '#'>/data/local.prop"}},
-					// Input KeyEvents					
+					// Input				
 					{ "key",2,1,1,{"input","keyevent"}},
 					{ "tw",2,1,1,{"input","text"}},
 					{ "tap",2,1,1,{"input","tap"}},
@@ -237,6 +245,7 @@ int adb_extended_commandline(int argc, char **argv){
 	
 	int new_argc = 0;
 	char **new_argv=NULL;		
+	printf("columns=%s\n",getenv("WIDTH"));
 	if(!argc) {
 		// bail early
 		new_argc = argc;
