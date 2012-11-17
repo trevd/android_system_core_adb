@@ -1541,11 +1541,8 @@ int main(int argc, char **argv)
 
 	// pre-process the command line 
     D("Handling commandline()\n");
-	int new_argc = 0;
-	char **new_argv=NULL;
-	adb_extended_commandline(argc - 1, argv + 1, &new_argc,&new_argv);
+	return adb_extended_commandline(argc - 1, argv + 1);
 	//printf("new_argc:%d\n",new_argc);
-    return adb_commandline(new_argc, new_argv);
 #else
     /* If adbd runs inside the emulator this will enable adb tracing via
      * adb-debug qemud service in the emulator. */

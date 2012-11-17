@@ -1,16 +1,35 @@
 #define  TRACE_TAG  TRACE_ADB
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include "sysdeps.h"
+#include "adb.h"
 
 #define ARRAYSIZE(a) ((int)(sizeof(a) / sizeof(*(a))))
 #define MAX_TOKENS 255
+struct input_keyevents{
+	char * name;
+	char * alt_name;
+	char * keycode;
+} keyevents[] = { { "MENU","unlock","82"},
+		{ "EXPLORER", "browser","64"},
+		{ "BACK","bk","4"},
+		{ "POWER","pwr","26"},
+		{ "DPAD_UP","up","19"},
+		{ "DPAD_DOWN","down","20"},
+		{ "DPAD_LEFT","left","21"},
+		{ "DPAD_RIGHT","right","23"},
+		{ "TAB","tab","61"},
+		{ "ENTER","ent","66"} };
+
+
 struct command_shortcut {
 		char * short_version;
 		int token_total;
 		int process_args; 
 		int is_shell;
 		char * full_version[MAX_TOKENS];
-} shortcuts[]  = { { "dev",1,0,0,{"devices"}},
+} shortcuts[]  = { { "dev",1,1,0,{"devices"}},
 					{ "kill",1,0,0,{"kill-server"}},
 					{ "sh",0,1,1,{}},
 					{ "s",0,1,1,{}},
@@ -30,9 +49,16 @@ struct command_shortcut {
 					{ "lsmod",1,0,1,{"lsmod"}},
 					{ "pl",1,1,0,{"pull"}},
 					{ "pu",1,1,0,{"push"}},
+					// reboot commands, some device specific
 					{ "recovery",2,0,0,{"reboot","recovery"}},
-					{ "sde",2,0,1,{"reboot_into","sde"}},
+					{ "fastboot",2,0,0,{"reboot","bootloader"}},
 					{ "rec",2,0,0,{"reboot","recovery"}},
+					// archos specialness
+					{ "sde",2,0,1,{"reboot_into","sde"}},
+					{ "arec",2,0,1,{"reboot_into","recovery"}},
+					{ "android",2,0,1,{"reboot_into","android"}},
+					// samsung download mode
+					{ "download",2,0,0,{"reboot","download"}}, 
 					{ "ll",2,1,1,{"ls","-l"}},
 					{ "lha",2,1,1,{"ls","-lha"}},
 					{ "lca",9,0,0,{"logcat","-b","system","-b","radio","-b","events","-b","main" }},
@@ -41,18 +67,19 @@ struct command_shortcut {
 					{ "un-root",1,0,1,{"echo '#'>/data/local.prop"}},
 					// Input KeyEvents					
 					{ "key",2,1,1,{"input","keyevent"}},
+					{ "tw",2,1,1,{"input","text"}},
 					{ "tap",2,1,1,{"input","tap"}},
-					{ "unlock",3,0,1,{"input","keyevent","82"}},
-					{ "back",3,0,1,{"input","keyevent","4"}},
-					{ "bk",3,0,1,{"input","keyevent","4"}},
 					// Activity Manager Startups
 					{ "vending",6,0,1,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.vending/.AssetBrowserActivity"}},
 					{ "settings",6,0,1,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}}
 } ;
 
 static const int shortcut_total = ARRAYSIZE(shortcuts);
+static const int keyevents_total = ARRAYSIZE(keyevents);
 int print_args(int argc, char **argv); 
 int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv);
+int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv);
+int is_keyevent(char* test_string);
 int is_shortcut(char* test_string);
 // Cheeky Debug function 
 int print_args(int argc, char **argv)
@@ -63,6 +90,63 @@ int print_args(int argc, char **argv)
 		printf("argv[%d]:%s ",counter,argv[counter]);	
 	}
 	printf("\n");
+	return 0;
+}
+int is_keyevent(char* test_string){
+
+	int counter = 0 ; int keyevent_index = -1 ; int test_strlen = strlen(test_string) ;
+	for(counter = 0 ; counter < keyevents_total ; counter++){
+		int keyevent_altname_strlength = strlen(keyevents[counter].alt_name) ;
+		int compare_length =  keyevent_altname_strlength > test_strlen ?  keyevent_altname_strlength : test_strlen ;
+		int strc = strncmp(keyevents[counter].alt_name,test_string,compare_length);
+		if(!strc){
+			keyevent_index = counter;
+			break;				
+		}else{
+			int keyevent_name_strlength = strlen(keyevents[counter].name) ;
+			compare_length =  keyevent_name_strlength> test_strlen ?  keyevent_name_strlength: test_strlen ;
+			strc = strncmp(keyevents[counter].name,test_string,compare_length);
+			if(!strc){
+				keyevent_index  = counter;
+				break;
+			}
+		}
+	}
+	return keyevent_index;
+
+}
+
+int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv){
+
+	int argc_position = 0 ; 
+	// check the first argv for a keyevent. we will only process if there is
+	// one present
+	
+	int keyevent_index = is_keyevent(argv[argc_position]);
+	printf("keyevent  %d\n ",keyevent_index );	
+	if(keyevent_index != -1){
+		// check to see if next is numeric
+		printf("Keyevent Index:%d\n",keyevent_index);
+		int repeat_count =0 ; int repeat_counter =0; argc_position += 1; 
+		*new_argc = 4 ;
+		(*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
+		(*new_argv)[0] = "shell"; (*new_argv)[1] = "input" ; (*new_argv)[2] = "keyevent"; (*new_argv)[3] = keyevents[keyevent_index].name;
+		if(argc_position==argc) // we've only got one to process 
+			repeat_count = 1;
+		else
+ 			repeat_count =atoi(argv[argc_position]); 
+		// set  up a command line		
+
+		if(repeat_count == 0)
+			repeat_count = 1;
+		else if(repeat_count > 0)
+			argc_position += 1; 	
+		for(repeat_counter = 0 ; repeat_counter<repeat_count;repeat_counter++){
+			adb_commandline(*new_argc,(*new_argv) );		
+		}
+		return 1;
+	}
+		
 	return 0;
 }
 int is_shortcut(char* test_string){
@@ -81,15 +165,16 @@ int is_shortcut(char* test_string){
 }
 
 int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
-
+	
 	if(!argc) { // sanity check to make sure nothing slipped through
 		// bail early
 		*new_argc = argc;
 		*new_argv = argv;
 		return 0;
 	} 
-	
+
 	int shortcut_index = is_shortcut(argv[0]);
+	
 	if(shortcut_index != -1)
 	{
 		//printf("Shortcut Found %d %s\n",shortcut_index,shortcuts[shortcut_index].full_version[0]);
@@ -131,25 +216,33 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 }
 
 
-int adb_extended_commandline(int argc, char **argv,int *new_argc ,char ***new_argv){
+int adb_extended_commandline(int argc, char **argv){
 	
+	int new_argc = 0;
+	char **new_argv=NULL;		
 	if(!argc) {
 		// bail early
-		*new_argc = argc;
-		*new_argv = argv;
-		return 0;
+		new_argc = argc;
+		new_argv = argv;
+	    return adb_commandline(new_argc, new_argv);
 	}
-		
-	//print_args(argc,argv);
-	if(process_shortcut(argc,argv,new_argc,new_argv)){
-		return 0;	
-	}else{
-		*new_argc = argc;
-		*new_argv = argv;
-	}
-	//print_args(*new_argc,(*new_argv));
 	
-	return 0;
+	print_args(argc,argv);
+	if(process_shortcut(argc,argv,&new_argc,&new_argv)){
+		
+		 return adb_commandline(new_argc, new_argv);
+	}else if(process_keyevent_chain(argc,argv,&new_argc,&new_argv)){
+		return adb_commandline(new_argc, new_argv);
+	}else{	
+		printf("Here we are ");		
+		new_argc = argc;
+		new_argv = argv;
+	}
+
+	print_args(argc,argv);
+    return adb_commandline(new_argc, new_argv);
+
+	
 }
 
 
