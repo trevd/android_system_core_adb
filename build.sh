@@ -14,8 +14,8 @@ if [ ! -z "$?" ] ; then
    cp $PWD/../../../out/host/linux-x86/bin/adb $ADB_PATH
    echo "starting adb"
    adb start-server
-   . bash_completion/adb.bash
-   cp bash_completion/adb.bash /etc/bash_completion.d/adb.bash
+   #. bash_completion/adb.bash
+   #cp bash_completion/adb.bash /etc/bash_completion.d/adb.bash
 fi 
 
 

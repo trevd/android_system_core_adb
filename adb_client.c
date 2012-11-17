@@ -250,7 +250,6 @@ int adb_connect(const char *service)
         }
 
         if(version != ADB_SERVER_VERSION) {
-        adb_close(fd);
             printf("adb server is out of date.  killing...\n");
             fd = _adb_connect("host:kill");
             adb_close(fd);

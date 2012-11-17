@@ -205,30 +205,9 @@ int sync_readmode(int fd, const char *path, unsigned *mode)
 
     *mode = ltohl(msg.stat.mode);
     return 0;
-
-}
-static int update_pull(const char *rpath,const char *path,unsigned int read)
-{
-             printf("%c[2J%c[2H", 27, 27);
-        printf("Android Debug Bridge Extended Version\n");
-        printf("Reading: %s -> %s %u/%u\n",rpath,path,total_bytes,read);
-        fflush(stdout);
-        return 0;
 }
 
-static int update_status(const char *rpath,const char *path,unsigned int size,unsigned int written,const char *fromMethod)
-{
-        // Don't show status if we wrote it in a oner 
-        if((written == size) && (written == total_bytes))
-                return 0;
-                
-        printf("%c[2J%c[2H", 27, 27);
-        printf("Android Debug Bridge Extended Version %s\n",fromMethod);
-        printf("Writing: %s -> %s %u/%u Last Write:%u\n",path,rpath,total_bytes,size,written);
-        fflush(stdout);
-        return 0;
-     }
-static int write_data_file(int size,const char *rpath,int fd, const char *path, syncsendbuf *sbuf)
+static int write_data_file(int fd, const char *path, syncsendbuf *sbuf)
 {
     int lfd, err = 0;
 
@@ -237,11 +216,11 @@ static int write_data_file(int size,const char *rpath,int fd, const char *path, 
         fprintf(stderr,"cannot open '%s': %s\n", path, strerror(errno));
         return -1;
     }
-    
+
     sbuf->id = ID_DATA;
     for(;;) {
         int ret;
-        
+
         ret = adb_read(lfd, sbuf->data, SYNC_DATA_MAX);
         if(!ret)
             break;
@@ -257,16 +236,15 @@ static int write_data_file(int size,const char *rpath,int fd, const char *path, 
         if(writex(fd, sbuf, sizeof(unsigned) * 2 + ret)){
             err = -1;
             break;
-        }        
+        }
         total_bytes += ret;
-        update_status(rpath,path,size,ret,"write_data_file");
     }
 
     adb_close(lfd);
     return err;
 }
 
-static int write_data_buffer(const char *rpath,const char *path,int fd, char* file_buffer, int size, syncsendbuf *sbuf)
+static int write_data_buffer(int fd, char* file_buffer, int size, syncsendbuf *sbuf)
 {
     int err = 0;
     int total = 0;
@@ -286,14 +264,13 @@ static int write_data_buffer(const char *rpath,const char *path,int fd, char* fi
         }
         total += count;
         total_bytes += count;
-        update_status(rpath,path,size,count,"write_data_buffer");      
     }
 
     return err;
 }
 
 #ifdef HAVE_SYMLINKS
-static int write_data_link(int size,const char *rpath,int fd, const char *path, syncsendbuf *sbuf)
+static int write_data_link(int fd, const char *path, syncsendbuf *sbuf)
 {
     int len, ret;
 
@@ -310,16 +287,15 @@ static int write_data_link(int size,const char *rpath,int fd, const char *path, 
     ret = writex(fd, sbuf, sizeof(unsigned) * 2 + len + 1);
     if(ret)
         return -1;
-        
+
     total_bytes += len + 1;
-    update_status(rpath,path,size,len,"write_data_link");
 
     return 0;
 }
 #endif
 
 static int sync_send(int fd, const char *lpath, const char *rpath,
-                     unsigned mtime, mode_t mode, int verifyApk,off_t st_size)
+                     unsigned mtime, mode_t mode, int verifyApk)
 {
     syncmsg msg;
     int len, r;
@@ -401,13 +377,13 @@ static int sync_send(int fd, const char *lpath, const char *rpath,
     }
 
     if (file_buffer) {
-        write_data_buffer(rpath,lpath,fd, file_buffer, st_size, sbuf);
+        write_data_buffer(fd, file_buffer, size, sbuf);
         free(file_buffer);
     } else if (S_ISREG(mode))
-        write_data_file(st_size,rpath,fd, lpath, sbuf);
+        write_data_file(fd, lpath, sbuf);
 #ifdef HAVE_SYMLINKS
     else if (S_ISLNK(mode))
-        write_data_link(st_size,rpath,fd, lpath, sbuf);
+        write_data_link(fd, lpath, sbuf);
 #endif
     else
         goto fail;
@@ -526,7 +502,6 @@ int sync_recv(int fd, const char *rpath, const char *lpath)
         }
 
         total_bytes += len;
-        update_pull(rpath,lpath,len);
     }
 
     adb_close(lfd);
@@ -746,7 +721,7 @@ static int copy_local_dir_remote(int fd, const char *lpath, const char *rpath, i
         if(ci->flag == 0) {
             fprintf(stderr,"%spush: %s -> %s\n", listonly ? "would " : "", ci->src, ci->dst);
             if(!listonly &&
-               sync_send(fd, ci->src, ci->dst, ci->time, ci->mode, 0,0 /* no verify APK */)){
+               sync_send(fd, ci->src, ci->dst, ci->time, ci->mode, 0 /* no verify APK */)){
                 return 1;
             }
             pushed++;
@@ -769,7 +744,7 @@ int do_sync_push(const char *lpath, const char *rpath, int verifyApk)
     struct stat st;
     unsigned mode;
     int fd;
-	printf("Don't push me because I'm close to the edge\n"); 
+
     fd = adb_connect("sync:");
     if(fd < 0) {
         fprintf(stderr,"error: %s\n", adb_error());
@@ -811,7 +786,7 @@ int do_sync_push(const char *lpath, const char *rpath, int verifyApk)
             rpath = tmp;
         }
         BEGIN();
-        if(sync_send(fd, lpath, rpath, st.st_mtime, st.st_mode, verifyApk,st.st_size)) {
+        if(sync_send(fd, lpath, rpath, st.st_mtime, st.st_mode, verifyApk)) {
             return 1;
         } else {
             END();

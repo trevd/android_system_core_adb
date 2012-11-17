@@ -11,15 +11,9 @@ include $(CLEAR_VARS)
 
 # Default to a virtual (sockets) usb interface
 USB_SRCS :=
+EXTENDED_SRCS := adb_extended.c
 EXTRA_SRCS :=
-FASTBOOT_SRCS := \
-		fastboot/bootimg.c \
-		fastboot/engine.c \
-		fastboot/fastboot.c \
-		fastboot/protocol.c \
-		fastboot/usb_linux.c \
-		fastboot/util_linux.c
- 
+
 ifeq ($(HOST_OS),linux)
   USB_SRCS := usb_linux.c
   EXTRA_SRCS := get_my_path_linux.c
@@ -40,22 +34,21 @@ endif
 
 ifeq ($(HOST_OS),windows)
   USB_SRCS := usb_windows.c
-  EXTRA_SRCS := get_my_path_windows.c
+  EXTRA_SRCS := get_my_path_windows.c ../libcutils/list.c
   EXTRA_STATIC_LIBS := AdbWinApi
   ifneq ($(strip $(USE_CYGWIN)),)
     # Pure cygwin case
-    LOCAL_LDLIBS += -lpthread
+    LOCAL_LDLIBS += -lpthread -lgdi32
     LOCAL_C_INCLUDES += /usr/include/w32api/ddk
   endif
   ifneq ($(strip $(USE_MINGW)),)
     # MinGW under Linux case
-    LOCAL_LDLIBS += -lws2_32
+    LOCAL_LDLIBS += -lws2_32 -lgdi32
     USE_SYSDEPS_WIN32 := 1
     LOCAL_C_INCLUDES += /usr/i586-mingw32msvc/include/ddk
   endif
   LOCAL_C_INCLUDES += development/host/windows/usb/api/
 endif
- LOCAL_C_INCLUDES += $(LOCAL_PATH)/fastboot
 
 LOCAL_SRC_FILES := \
 	adb.c \
@@ -65,6 +58,7 @@ LOCAL_SRC_FILES := \
 	transport_usb.c \
 	commandline.c \
 	adb_client.c \
+	adb_auth_host.c \
 	sockets.c \
 	services.c \
 	file_sync_client.c \
@@ -72,10 +66,9 @@ LOCAL_SRC_FILES := \
 	$(USB_SRCS) \
 	utils.c \
 	usb_vendors.c \
-	adb_extended.c \
-	help.c \
-	$(FASTBOOT_SRCS)
+	$(EXTENDED_SRCS) 
 
+LOCAL_C_INCLUDES += external/openssl/include
 
 ifneq ($(USE_SYSDEPS_WIN32),)
   LOCAL_SRC_FILES += sysdeps_win32.c
@@ -87,14 +80,14 @@ LOCAL_CFLAGS += -O2 -g -DADB_HOST=1  -Wall -Wno-unused-parameter
 LOCAL_CFLAGS += -D_XOPEN_SOURCE -D_GNU_SOURCE
 LOCAL_MODULE := adb
 
-LOCAL_STATIC_LIBRARIES := libzipfile libunz $(EXTRA_STATIC_LIBS) libext4_utils libz
+LOCAL_STATIC_LIBRARIES := libzipfile libunz libcrypto_static $(EXTRA_STATIC_LIBS)
 ifeq ($(USE_SYSDEPS_WIN32),)
 	LOCAL_STATIC_LIBRARIES += libcutils
 endif
 
 include $(BUILD_HOST_EXECUTABLE)
 
-$(call dist-for-goals,dist_files,$(LOCAL_BUILT_MODULE))
+$(call dist-for-goals,dist_files sdk,$(LOCAL_BUILT_MODULE))
 
 ifeq ($(HOST_OS),windows)
 $(LOCAL_INSTALLED_MODULE): \
@@ -107,14 +100,8 @@ endif
 # =========================================================
 
 include $(CLEAR_VARS)
-FASTBOOT_SRCS := \
-		fastboot/engine.c \
-		fastboot/fastboot.c \
-		fastboot/protocol.c \
-		fastboot/usb_linux.c \
-		fastboot/util_linux.c \
-		fastboot/bootimg.c 
-  
+
+EXTENDED_SRCS := adb_extended.c
 LOCAL_SRC_FILES := \
 	adb.c \
 	backup_service.c \
@@ -122,6 +109,7 @@ LOCAL_SRC_FILES := \
 	transport.c \
 	transport_local.c \
 	transport_usb.c \
+	adb_auth_client.c \
 	sockets.c \
 	services.c \
 	file_sync_service.c \
@@ -131,9 +119,7 @@ LOCAL_SRC_FILES := \
 	usb_linux_client.c \
 	log_service.c \
 	utils.c \
-	adb_extended.c \
-	help.c \
-	$(FASTBOOT_SRCS)
+	$(EXTENDED_SRCS) 
 
 LOCAL_CFLAGS := -O2 -g -DADB_HOST=0 -Wall -Wno-unused-parameter
 LOCAL_CFLAGS += -D_XOPEN_SOURCE -D_GNU_SOURCE
@@ -148,7 +134,7 @@ LOCAL_FORCE_STATIC_EXECUTABLE := true
 LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT_SBIN)
 LOCAL_UNSTRIPPED_PATH := $(TARGET_ROOT_OUT_SBIN_UNSTRIPPED)
 
-LOCAL_STATIC_LIBRARIES := libcutils libc libext4_utils libz libunz 
+LOCAL_STATIC_LIBRARIES := libcutils libc libmincrypt
 include $(BUILD_EXECUTABLE)
 
 
@@ -156,14 +142,7 @@ include $(BUILD_EXECUTABLE)
 # =========================================================
 ifneq ($(SDK_ONLY),true)
 include $(CLEAR_VARS)
-FASTBOOT_SRCS := \
-		fastboot/bootimg.c \
-		fastboot/engine.c \
-		fastboot/fastboot.c \
-		fastboot/protocol.c \
-		fastboot/usb_linux.c \
-		fastboot/util_linux.c 
-  
+EXTENDED_SRCS := adb_extended.c
 LOCAL_LDLIBS := -lrt -lncurses -lpthread
 
 LOCAL_SRC_FILES := \
@@ -174,6 +153,7 @@ LOCAL_SRC_FILES := \
 	transport_usb.c \
 	commandline.c \
 	adb_client.c \
+	adb_auth_host.c \
 	sockets.c \
 	services.c \
 	file_sync_client.c \
@@ -182,9 +162,7 @@ LOCAL_SRC_FILES := \
 	utils.c \
 	usb_vendors.c \
 	fdevent.c \
-	adb_extended.c \
-	help.c \
-	$(FASTBOOT_SRCS)
+	$(EXTENDED_SRCS) 
 
 LOCAL_CFLAGS := \
 	-O2 \
@@ -196,9 +174,13 @@ LOCAL_CFLAGS := \
 	-D_XOPEN_SOURCE \
 	-D_GNU_SOURCE
 
+LOCAL_C_INCLUDES += external/openssl/include
+
 LOCAL_MODULE := adb
 
-LOCAL_STATIC_LIBRARIES := libzipfile libunz libcutils libext4_utils libz
+LOCAL_STATIC_LIBRARIES := libzipfile libunz libcutils
+
+LOCAL_SHARED_LIBRARIES := libcrypto
 
 include $(BUILD_EXECUTABLE)
 endif

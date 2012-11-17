@@ -3,7 +3,6 @@
 
 #include "adb.h"
 
-
 /* connect to adb, connect to the named service, and return
 ** a valid fd for interacting with that service upon success
 ** or a negative number on failure

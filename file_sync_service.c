@@ -55,7 +55,6 @@ static int mkdirs(char *name)
 
 static int do_stat(int s, const char *path)
 {
-        
     syncmsg msg;
     struct stat st;
 
@@ -93,7 +92,7 @@ static int do_list(int s, const char *path)
     msg.dent.id = ID_DENT;
 
     d = opendir(path);
-    if(d == 0) goto done;               
+    if(d == 0) goto done;
 
     while((de = readdir(d))) {
         int len = strlen(de->d_name);
