@@ -38,7 +38,9 @@ struct command_shortcut {
 					{ "dmesg",1,0,1,{"dmesg"}},
 					{ "mount",1,1,1,{"mount"}},
 					{ "umount",1,1,1,{"umount"}},
-					{ "gp",1,0,1,{"getprop"}},
+					{ "uname",2,0,1,{"cat","proc/version"}},
+					{ "gp",1,1,1,{"getprop"}},
+					{ "sp",1,1,1,{"setprop"}},
 					{ "cat",1,1,1,{"cat"}},
 					{ "echo",1,1,1,{"echo"}},
 					{ "ps",1,0,1,{"ps"}},
@@ -46,6 +48,8 @@ struct command_shortcut {
 					{ "wp",1,0,1,{"watchprops"}},
 					{ "chmod",1,1,1,{"chmod"}},
 					{ "insmod",1,1,1,{"insmod"}},
+					{ "gevt",1,1,1,{"getevent"}},
+					{ "sevt",1,1,1,{"sendevent"}},
 					{ "lsmod",1,0,1,{"lsmod"}},
 					{ "pl",1,1,0,{"pull"}},
 					{ "pu",1,1,0,{"push"}},
@@ -69,6 +73,7 @@ struct command_shortcut {
 					{ "key",2,1,1,{"input","keyevent"}},
 					{ "tw",2,1,1,{"input","text"}},
 					{ "tap",2,1,1,{"input","tap"}},
+					{ "swipe",2,1,1,{"input","swipe"}},
 					// Activity Manager Startups
 					{ "vending",6,0,1,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.vending/.AssetBrowserActivity"}},
 					{ "settings",6,0,1,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}}
@@ -118,36 +123,47 @@ int is_keyevent(char* test_string){
 
 int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv){
 
-	int argc_position = 0 ; 
+	int argc_position = 0 ; int processed =0;
 	// check the first argv for a keyevent. we will only process if there is
 	// one present
 	
 	int keyevent_index = is_keyevent(argv[argc_position]);
-	printf("keyevent  %d\n ",keyevent_index );	
+	//printf("keyevent  %d\n ",keyevent_index );	
 	if(keyevent_index != -1){
 		// check to see if next is numeric
-		printf("Keyevent Index:%d\n",keyevent_index);
-		int repeat_count =0 ; int repeat_counter =0; argc_position += 1; 
+		printf("Keyevent Index:%d argc=%d\n",keyevent_index,argc);
+		if(argc>1) argc_position += 1;
+		int repeat_count =0 ; int repeat_counter =0;  
 		*new_argc = 4 ;
 		(*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
+		
 		(*new_argv)[0] = "shell"; (*new_argv)[1] = "input" ; (*new_argv)[2] = "keyevent"; (*new_argv)[3] = keyevents[keyevent_index].name;
-		if(argc_position==argc) // we've only got one to process 
-			repeat_count = 1;
-		else
- 			repeat_count =atoi(argv[argc_position]); 
-		// set  up a command line		
+		int argc_counter = argc_position; 
+		for(argc_counter = argc_position;argc_counter<(argc); argc_counter++){
+			printf("counter=%d : pos=%d : argv[%d]=%s\n",argc_counter,argc_position,argc_position,argv[argc_position]);
+			if(argc_position==argc) // we've only got one to process 
+				repeat_count = 1;
+			else
+	 			repeat_count =atoi(argv[argc_position]); 
+			// set  up a command line		
 
-		if(repeat_count == 0)
-			repeat_count = 1;
-		else if(repeat_count > 0)
-			argc_position += 1; 	
-		for(repeat_counter = 0 ; repeat_counter<repeat_count;repeat_counter++){
-			adb_commandline(*new_argc,(*new_argv) );		
+			if(repeat_count == 0)
+				repeat_count = 1;
+			else if(repeat_count > 0)
+				argc_position += 1; 	
+			printf("repeat_count:%d\n",repeat_count);			
+			for(repeat_counter = 0 ; repeat_counter<repeat_count;repeat_counter++){
+				//printf("
+				printf("repeat_counter:%d\n",repeat_counter);
+				adb_commandline(*new_argc,(*new_argv) );		
+			}
+			processed = 1 ;
+			//return 1;
 		}
-		return 1;
+		
 	}
 		
-	return 0;
+	return processed;
 }
 int is_shortcut(char* test_string){
 
@@ -227,19 +243,19 @@ int adb_extended_commandline(int argc, char **argv){
 	    return adb_commandline(new_argc, new_argv);
 	}
 	
-	print_args(argc,argv);
+	//print_args(argc,argv);
 	if(process_shortcut(argc,argv,&new_argc,&new_argv)){
 		
 		 return adb_commandline(new_argc, new_argv);
 	}else if(process_keyevent_chain(argc,argv,&new_argc,&new_argv)){
-		return adb_commandline(new_argc, new_argv);
+		return 0;
 	}else{	
-		printf("Here we are ");		
+		//printf("Here we are ");		
 		new_argc = argc;
 		new_argv = argv;
 	}
 
-	print_args(argc,argv);
+	//print_args(argc,argv);
     return adb_commandline(new_argc, new_argv);
 
 	
