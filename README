@@ -15,10 +15,6 @@ the true shell commands.
 This minimizes the need to make major code chanages to existing code 
 files. This is helpful to enable fast intgeration with the latest sources.
 
-TODO:  
-
-
-
 
 Patching into new versions:
 
@@ -31,7 +27,9 @@ adb.c - change the main function to add command line pre-processing
 adb.h - add definition for the extended_commandline function
 	adb_extended_commandline(int argc, char** argv);
 
-It really should('nt) be this simple.  
+
+services.c - set shell command to /sbin/sh when recovery_mode is on
+
 
 
 
