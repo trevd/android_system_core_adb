@@ -65,12 +65,16 @@ struct command_shortcut {
 					{ "lsmod",1,0,1,{"lsmod"}},
 					{ "pl",1,1,0,{"pull"}},
 					{ "pu",1,1,0,{"push"}},
+					{ "wfd",1,0,0,{"wait-for-device"}},
 					// reboot commands, some device specific
 					{ "recovery",2,0,0,{"reboot","recovery"}},
 					{ "fastboot",2,0,0,{"reboot","bootloader"}},
 					{ "rec",2,0,0,{"reboot","recovery"}},
 					// archos specialness
+					{ "kdf",1,1,1,{"kd_flasher"}},
+					{ "updaterd",1,0,1,{"updaterd"}},
 					{ "sde",2,0,1,{"reboot_into","sde"}},
+					{ "into",2,1,1,{"reboot_into","-s"}},
 					{ "arec",2,0,1,{"reboot_into","recovery"}},
 					{ "android",2,0,1,{"reboot_into","android"}},
 					// samsung download mode
