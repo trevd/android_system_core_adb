@@ -359,6 +359,7 @@ typedef enum {
     TRACE_JDWP,      /* 0x100 */
     TRACE_SERVICES,
     TRACE_AUTH,
+	TRACE_EXT,
 } AdbTrace;
 
 #if ADB_TRACE
@@ -457,7 +458,6 @@ int is_adb_interface(int vid, int pid, int usb_class, int usb_subclass, int usb_
 
 unsigned host_to_le32(unsigned n);
 int adb_commandline(int argc, char **argv);
-int adb_extended_commandline(int argc, char **argv);
 
 int connection_state(atransport *t);
 

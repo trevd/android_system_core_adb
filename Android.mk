@@ -11,8 +11,8 @@ include $(CLEAR_VARS)
 
 # Default to a virtual (sockets) usb interface
 USB_SRCS :=
-EXTENDED_SRCS := adb_extended.c
-EXTRA_SRCS :=
+EXTRA_SRCS := 
+EXT_SRC := adb_extended.c
 
 ifeq ($(HOST_OS),linux)
   USB_SRCS := usb_linux.c
@@ -66,7 +66,7 @@ LOCAL_SRC_FILES := \
 	$(USB_SRCS) \
 	utils.c \
 	usb_vendors.c \
-	$(EXTENDED_SRCS) 
+	$(EXT_SRC)
 
 LOCAL_C_INCLUDES += external/openssl/include
 
@@ -100,8 +100,7 @@ endif
 # =========================================================
 
 include $(CLEAR_VARS)
-
-EXTENDED_SRCS := adb_extended.c
+EXT_SRC := adb_extended.c
 LOCAL_SRC_FILES := \
 	adb.c \
 	backup_service.c \
@@ -119,7 +118,7 @@ LOCAL_SRC_FILES := \
 	usb_linux_client.c \
 	log_service.c \
 	utils.c \
-	$(EXTENDED_SRCS) 
+	$(EXT_SRC)
 
 LOCAL_CFLAGS := -O2 -g -DADB_HOST=0 -Wall -Wno-unused-parameter
 LOCAL_CFLAGS += -D_XOPEN_SOURCE -D_GNU_SOURCE
@@ -142,9 +141,9 @@ include $(BUILD_EXECUTABLE)
 # =========================================================
 ifneq ($(SDK_ONLY),true)
 include $(CLEAR_VARS)
-EXTENDED_SRCS := adb_extended.c
-LOCAL_LDLIBS := -lrt -lncurses -lpthread
 
+LOCAL_LDLIBS := -lrt -lncurses -lpthread
+EXT_SRC := adb_extended.c
 LOCAL_SRC_FILES := \
 	adb.c \
 	console.c \
@@ -162,7 +161,7 @@ LOCAL_SRC_FILES := \
 	utils.c \
 	usb_vendors.c \
 	fdevent.c \
-	$(EXTENDED_SRCS) 
+	$(EXT_SRC)
 
 LOCAL_CFLAGS := \
 	-O2 \
@@ -172,7 +171,8 @@ LOCAL_CFLAGS := \
 	-Wall \
 	-Wno-unused-parameter \
 	-D_XOPEN_SOURCE \
-	-D_GNU_SOURCE
+	-D_GNU_SOURCE \
+	
 
 LOCAL_C_INCLUDES += external/openssl/include
 

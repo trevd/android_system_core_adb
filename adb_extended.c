@@ -1,4 +1,4 @@
-#define  TRACE_TAG  TRACE_ADB
+#define  TRACE_TAG  TRACE_EXT
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -40,8 +40,12 @@ struct command_shortcut {
 					{ "dmesg",1,0,1,{"dmesg"}},
 					{ "mount",1,1,1,{"mount"}},
 					{ "umount",1,1,1,{"umount"}},
+					{ "lspart",1,1,1,{"mount | grep"}},
 					{ "uname",2,0,1,{"cat","proc/version"}},
 					{ "gp",1,1,1,{"getprop"}},
+					{ "du",1,1,1,{"du"}},
+					{ "df",1,1,1,{"df"}},
+					{ "dfh",2,1,1,{"df","-h"}},
 					{ "sp",1,1,1,{"setprop"}},
 					{ "cat",1,1,1,{"cat"}},
 					{ "c",1,1,1,{"cat"}},
@@ -98,11 +102,11 @@ int is_shortcut(char* test_string);
 int print_args(int argc, char **argv)
 {
 	int counter = 0;
-	printf("argc:%d ",argc);	
+	D("argc:%d\n",argc);	
 	for(counter = 0 ; counter < argc;counter++){
-		printf("argv[%d]:%s ",counter,argv[counter]);	
+		D("argv[%d]:%s\n",counter,argv[counter]);	
 	}
-	printf("\n");
+
 	return 0;
 }
 int is_keyevent(char* test_string){
@@ -136,10 +140,9 @@ int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv
 	// one present
 	
 	int keyevent_index = is_keyevent(argv[argc_position]);
-	//printf("keyevent  %d\n ",keyevent_index );	
 	if(keyevent_index != -1){
 		// check to see if next is numeric
-		printf("Keyevent Index:%d argc=%d\n",keyevent_index,argc);
+		D("Keyevent Index:%d argc=%d\n",keyevent_index,argc);
 		if(argc>1) argc_position += 1;
 		int repeat_count =0 ; int repeat_counter =0;  
 		*new_argc = 4 ;
@@ -174,7 +177,7 @@ int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv
 	return processed;
 }
 int is_shortcut(char* test_string){
-
+	D("test_string:%s\n",test_string);
 	int counter = 0 ; int shortcut_index = -1 ; int test_strlen = strlen(test_string) ;
 	for(counter = 0 ; counter < shortcut_total ; counter++){
 		int shortcut_strlength = strlen(shortcuts[counter].short_version) ;
@@ -185,11 +188,12 @@ int is_shortcut(char* test_string){
 			break;				
 		}
 	}
+	D("shortcut_index:%d:\n",shortcut_index);
 	return shortcut_index;
 }
 
 int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
-	
+	print_args(argc,argv);
 	if(!argc) { // sanity check to make sure nothing slipped through
 		// bail early
 		*new_argc = argc;
@@ -244,16 +248,15 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 int adb_extended_commandline(int argc, char **argv){
 	
 	int new_argc = 0;
+	D("adb_extended_commandline\n");
 	char **new_argv=NULL;		
-	printf("columns=%s\n",getenv("WIDTH"));
 	if(!argc) {
-		// bail early
+		D("adb_extended_commandline argc:%d\n",argc);
 		new_argc = argc;
 		new_argv = argv;
 	    return adb_commandline(new_argc, new_argv);
 	}
 	
-	//print_args(argc,argv);
 	if(process_shortcut(argc,argv,&new_argc,&new_argv)){
 		
 		 return adb_commandline(new_argc, new_argv);

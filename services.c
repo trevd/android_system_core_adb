@@ -376,15 +376,9 @@ static int create_subproc_thread(const char *name)
     int ret_fd;
     pid_t pid;
     if(name) {
-		if( recovery_mode == 1 )
-	        ret_fd = create_subprocess("/sbin/sh", "-c", name, &pid);
-		else
-        	ret_fd = create_subprocess(SHELL_COMMAND, "-c", name, &pid);
+        ret_fd = create_subprocess(SHELL_COMMAND, "-c", name, &pid);
     } else {
-		if( recovery_mode == 1 )
-	        ret_fd = create_subprocess("/sbin/sh","-", 0, &pid);
-		else
-	        ret_fd = create_subprocess(SHELL_COMMAND, "-", 0, &pid);
+        ret_fd = create_subprocess(SHELL_COMMAND, "-", 0, &pid);
     }
     D("create_subprocess() ret_fd=%d pid=%d\n", ret_fd, pid);
 

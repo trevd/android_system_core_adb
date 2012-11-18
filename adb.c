@@ -40,7 +40,7 @@
 #else
 #include "usb_vendors.h"
 #endif
-
+int adb_extended_commandline(int argc , char** argv);
 #if ADB_TRACE
 ADB_MUTEX_DEFINE( D_lock );
 #endif
@@ -104,6 +104,7 @@ void  adb_trace_init(void)
         { "jdwp", TRACE_JDWP },
         { "services", TRACE_SERVICES },
         { "auth", TRACE_AUTH },
+        { "ext", TRACE_EXT },
         { NULL, 0 }
     };
 
@@ -1538,11 +1539,8 @@ int main(int argc, char **argv)
 #if ADB_HOST
     adb_sysdeps_init();
     adb_trace_init();
-
-	// pre-process the command line 
     D("Handling commandline()\n");
-	return adb_extended_commandline(argc - 1, argv + 1);
-	//printf("new_argc:%d\n",new_argc);
+    return adb_extended_commandline(argc - 1, argv + 1);
 #else
     /* If adbd runs inside the emulator this will enable adb tracing via
      * adb-debug qemud service in the emulator. */
