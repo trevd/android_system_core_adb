@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/sysinfo.h>
 #include <sys/types.h>
+#include <arpa/inet.h>
 #include "sysdeps.h"
 #include "adb.h"
 
@@ -13,14 +14,16 @@ struct input_keyevents{
 	char * name;
 	char * alt_name;
 	char * keycode;
-} keyevents[] = { { "MENU","unlock","82"},
+} keyevents[] = { 
+		{ "MENU","menu","82"},
+		{ "MENU","unlock","82"},
 		{ "EXPLORER", "browser","64"},
 		{ "BACK","bk","4"},
 		{ "POWER","pwr","26"},
 		{ "DPAD_UP","up","19"},
 		{ "DPAD_DOWN","down","20"},
 		{ "DPAD_LEFT","left","21"},
-		{ "DPAD_RIGHT","right","23"},
+		{ "DPAD_RIGHT","right","22"},
 		{ "TAB","tab","61"},
 		{ "ENTER","ent","66"} };
 
@@ -29,9 +32,10 @@ struct command_shortcut {
 		char * short_version;
 		int token_total;
 		int process_args; 
-		int is_shell;
+	int is_shell;
 		char * full_version[MAX_TOKENS];
-} shortcuts[]  = { { "dev",1,1,0,{"devices"}},
+} shortcuts[]  = { { "ver",1,0,0,{"version"}},
+					{ "dev",1,1,0,{"devices"}},
 					{ "kill",1,0,0,{"kill-server"}},
 					{ "sh",0,1,1,{}},
 					{ "s",0,1,1,{}},
@@ -54,8 +58,13 @@ struct command_shortcut {
 					{ "mv",1,1,1,{"mv"}},
 					{ "cp",1,1,1,{"cp"}},
 					{ "rm",1,1,1,{"rm"}},
+					{ "rmf",2,1,1,{"rm","-f"}},
+					{ "symlink",2,1,1,{"ln","-s"}},
+					{ "netcfg",1,1,1,{"netcfg"}},
+
 					{ "touch",1,1,1,{"touch"}},
 					{ "lsusb",1,1,1,{"lsusb"}},
+					{ "mkdir",1,1,1,{"mkdir"}},
 					{ "grp",1,1,1,{"getprop | grep"}},
 					{ "wp",1,0,1,{"watchprops"}},
 					{ "chmod",1,1,1,{"chmod"}},
@@ -80,6 +89,7 @@ struct command_shortcut {
 					// samsung download mode
 					{ "download",2,0,0,{"reboot","download"}}, 
 					{ "ll",2,1,1,{"ls","-l"}},
+					{ "l",2,1,1,{"ls","-la"}},
 					{ "lha",2,1,1,{"ls","-lha"}},
 					{ "lca",9,0,0,{"logcat","-b","system","-b","radio","-b","events","-b","main" }},
 					{ "lc",1,1,0,{"logcat"}},
@@ -100,8 +110,33 @@ static const int keyevents_total = ARRAYSIZE(keyevents);
 int print_args(int argc, char **argv); 
 int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv);
 int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv);
+int process_ipaddress(int argc, char **argv,int *new_argc ,char ***new_argv);
 int is_keyevent(char* test_string);
 int is_shortcut(char* test_string);
+int is_ipaddress(char *ipaddress);
+int is_ipaddress(char *ipaddress)
+{
+
+    struct sockaddr_in sa;
+    int result = 0;
+    char* ipcpy= (char*) malloc(strlen(ipaddress) * sizeof(char));
+    strcpy(ipcpy,ipaddress);
+    char * lineptr = strsep(&ipcpy,":");
+    result = inet_pton(AF_INET, lineptr, &(sa.sin_addr));	
+    return result != 0;
+}
+int process_ipaddress(int argc, char **argv,int *new_argc ,char ***new_argv){
+
+		if(!is_ipaddress(argv[0]))
+			return 0; // not an ipaddress, time time leave time place
+
+		*new_argc =2;		
+		(*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
+		(*new_argv)[0]="connect";
+		(*new_argv)[1]=argv[0];
+		return 1;		
+		
+}
 // Cheeky Debug function 
 int print_args(int argc, char **argv)
 {
@@ -144,7 +179,7 @@ int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv
 	// one present
 	
 	int keyevent_index = is_keyevent(argv[argc_position]);
-	if(keyevent_index != -1){
+	if(keyevent_index != -1){	
 		// check to see if next is numeric
 		D("Keyevent Index:%d argc=%d\n",keyevent_index,argc);
 		if(argc>1) argc_position += 1;
@@ -154,6 +189,11 @@ int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv
 		
 		(*new_argv)[0] = "shell"; (*new_argv)[1] = "input" ; (*new_argv)[2] = "keyevent"; (*new_argv)[3] = keyevents[keyevent_index].keycode;
 		int argc_counter = argc_position; 
+		while(argc){
+			printf("argc:%d\n",argc);
+			argc --; 
+		}
+		return 1;
 		for(argc_counter = argc_position;argc_counter<(argc); argc_counter++){
 			printf("counter=%d : pos=%d : argv[%d]=%s\n",argc_counter,argc_position,argc_position,argv[argc_position]);
 			if(argc_position==argc) // we've only got one to process 
@@ -168,7 +208,6 @@ int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv
 				argc_position += 1; 	
 			printf("repeat_count:%d\n",repeat_count);			
 			for(repeat_counter = 0 ; repeat_counter<repeat_count;repeat_counter++){
-				//printf("
 				printf("repeat_counter:%d\n",repeat_counter);
 				adb_commandline(*new_argc,(*new_argv) );		
 			}
@@ -249,30 +288,33 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 }
 
 
-int adb_extended_commandline(int argc, char **argv){
+int adb_extended_commandline(int argc , char **argv){
 	
-	int new_argc = 0;
 	D("adb_extended_commandline\n");
-	char **new_argv=NULL;		
+	char **new_argv=NULL  ; int new_argc = 0;
 	if(!argc) {
 		D("adb_extended_commandline argc:%d\n",argc);
-		new_argc = argc;
-		new_argv = argv;
-	    return adb_commandline(new_argc, new_argv);
+		new_argc = argc; new_argv = argv;
+		goto process_now;
 	}
-	
-	if(process_shortcut(argc,argv,&new_argc,&new_argv)){
-		
-		 return adb_commandline(new_argc, new_argv);
+	// we'll by checking to ee for ip!
+	if(process_ipaddress(argc,argv,&new_argc,&new_argv))
+		goto process_now;
+			
+
+
+	// CHECK TO SEE IF THE USER IS LAZY! 
+	// &new_argc and &new_argv will contain the real 
+	// exploded values
+	if(process_shortcut(argc,argv,&new_argc,&new_argv)){ 
+		 	goto process_now;
 	}else if(process_keyevent_chain(argc,argv,&new_argc,&new_argv)){
 		return 0;
 	}else{	
-		//printf("Here we are ");		
-		new_argc = argc;
-		new_argv = argv;
+		new_argc = argc; new_argv = argv;
 	}
 
-	//print_args(argc,argv);
+process_now:
     return adb_commandline(new_argc, new_argv);
 
 	

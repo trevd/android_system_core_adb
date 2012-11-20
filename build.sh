@@ -1,5 +1,6 @@
 #!/bin/bash
 echo "building adx"
+touch *
 ADB_PATH=`which adb`
 if [  -z "$ADB_PATH" ] ; then
         ADB_PATH="/media/android/sdk/platform-tools/adb"
