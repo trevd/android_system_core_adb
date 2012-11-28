@@ -16,7 +16,7 @@ struct input_keyevents{
 	char * keycode;
 } keyevents[] = { 
 		{ "MENU","menu","82"},
-		{ "MENU","unlock","82"},
+		{ "UNLOCK","unlock","82"},
 		{ "EXPLORER", "browser","64"},
 		{ "BACK","bk","4"},
 		{ "POWER","pwr","26"},
@@ -157,6 +157,7 @@ int is_keyevent(char* test_string){
 		int strc = strncmp(keyevents[counter].alt_name,test_string,compare_length);
 		if(!strc){
 			keyevent_index = counter;
+			//printf("	keyevent_index  %d\n",	keyevent_index );
 			break;				
 		}else{
 			int keyevent_name_strlength = strlen(keyevents[counter].name) ;
@@ -174,51 +175,36 @@ int is_keyevent(char* test_string){
 
 int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv){
 
-	int argc_position = 0 ; int processed =0;
-	// check the first argv for a keyevent. we will only process if there is
-	// one present
+	// counters and state management 
+	int keyevent_index, repeat_count   , repeat_counter  , check_repeater =0  , processed=0 , argc_counter  =0 ; 
 	
-	int keyevent_index = is_keyevent(argv[argc_position]);
-	if(keyevent_index != -1){	
-		// check to see if next is numeric
-		D("Keyevent Index:%d argc=%d\n",keyevent_index,argc);
-		if(argc>1) argc_position += 1;
-		int repeat_count =0 ; int repeat_counter =0;  
-		*new_argc = 4 ;
-		(*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
-		
-		(*new_argv)[0] = "shell"; (*new_argv)[1] = "input" ; (*new_argv)[2] = "keyevent"; (*new_argv)[3] = keyevents[keyevent_index].keycode;
-		int argc_counter = argc_position; 
-		while(argc){
-			printf("argc:%d\n",argc);
-			argc --; 
-		}
-		return 1;
-		for(argc_counter = argc_position;argc_counter<(argc); argc_counter++){
-			printf("counter=%d : pos=%d : argv[%d]=%s\n",argc_counter,argc_position,argc_position,argv[argc_position]);
-			if(argc_position==argc) // we've only got one to process 
-				repeat_count = 1;
-			else
-	 			repeat_count =atoi(argv[argc_position]); 
-			// set  up a command line		
-
-			if(repeat_count == 0)
-				repeat_count = 1;
-			else if(repeat_count > 0)
-				argc_position += 1; 	
-			printf("repeat_count:%d\n",repeat_count);			
-			for(repeat_counter = 0 ; repeat_counter<repeat_count;repeat_counter++){
-				printf("repeat_counter:%d\n",repeat_counter);
+	// setup up 3/4 of a keyevent command
+	*new_argc = 4 ; (*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
+	(*new_argv)[0] = "shell"; (*new_argv)[1] = "input" ; (*new_argv)[2] = "keyevent"; 
+	while(argc_counter<argc){		
+		if(check_repeater){
+			if(!(repeat_count = atol(argv[argc_counter])))
+					repeat_count = 1;
+			
+			for(repeat_counter = 0 ; repeat_counter<repeat_count;repeat_counter++)
 				adb_commandline(*new_argc,(*new_argv) );		
-			}
-			processed = 1 ;
-			//return 1;
+			
+			check_repeater = 0;
+					
 		}
-		
+		if((keyevent_index = is_keyevent(argv[argc_counter])) != -1){
+			processed = 1 ; check_repeater =1 ;
+			(*new_argv)[3] = keyevents[keyevent_index].keycode;			
+		}
+		argc_counter ++; 
+	
 	}
-		
-	return processed;
+	if(check_repeater) // we end we a key command so tidy up 
+		adb_commandline(*new_argc,(*new_argv) );
+	
+	return processed;	
 }
+
 int is_shortcut(char* test_string){
 	D("test_string:%s\n",test_string);
 	int counter = 0 ; int shortcut_index = -1 ; int test_strlen = strlen(test_string) ;
