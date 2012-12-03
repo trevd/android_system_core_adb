@@ -39,7 +39,7 @@ struct command_shortcut {
 		char * full_version[MAX_TOKENS];
 } shortcuts[]  = { 
 					{ "ver",COMMAND_HAS_ARGS ,COMMAND_NO_ARGS ,COMMAND_TYPE_ADB,{"version"}},
-					{ "remount",2,COMMAND_HAS_ARGS ,COMMAND_TYPE_SHELL,{"mount","-rw,remount"}},
+					{ "remount",2,COMMAND_HAS_ARGS ,COMMAND_TYPE_SHELL,{"mount","-orw,remount"}},
 					{ "dev",1,COMMAND_HAS_ARGS ,COMMAND_TYPE_ADB,{"devices"}},
 					{ "d",1,COMMAND_HAS_ARGS ,COMMAND_TYPE_ADB,{"devices"}},
 					{ "kill",COMMAND_HAS_ARGS ,COMMAND_NO_ARGS ,COMMAND_TYPE_ADB,{"kill-server"}},
