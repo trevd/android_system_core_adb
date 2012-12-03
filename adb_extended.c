@@ -205,7 +205,7 @@ int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv
 		argc_counter ++; 
 	
 	}
-	if(check_repeater) // we end we a key command so tidy up 
+	if(check_repeater) // we end with a key command so tidy up 
 		adb_commandline(*new_argc,(*new_argv) );
 	
 	return processed;	
@@ -279,7 +279,8 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 	return 0;
 }
 
-
+// It's alright We will take over commandline calling from here, 
+// thank you very much
 int adb_extended_commandline(int argc , char **argv){
 	
 	D("adb_extended_commandline\n");
