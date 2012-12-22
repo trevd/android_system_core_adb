@@ -1,4 +1,4 @@
-#define  TRACE_TAG  TRACE_EXT
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,7 +9,7 @@
 #include "adb.h"
 #include "adb_extended.h"
 
-
+#define  TRACE_TAG  TRACE_EXT
 int is_ipaddress(char *ipaddress)
 {
 
@@ -22,17 +22,6 @@ int is_ipaddress(char *ipaddress)
     return result != 0;
 }
 
-// Cheeky Debug function 
-static int print_args(int argc, char **argv)
-{
-	int counter = 0;
-	D("argc:%d\n",argc);	
-	for(counter = 0 ; counter < argc;counter++){
-		D("argv[%d]:%s\n",counter,argv[counter]);	
-	}
-
-	return 0;
-}
 
 // is_keyevent : Test test_string to see if it contains either input_keyevents.name or 
 // input_keyevents.alt_name. 
@@ -65,7 +54,7 @@ int is_keyevent(char* test_string){
 }
 
 
-static int process_ipaddress(int argc, char **argv,int *new_argc ,char ***new_argv){
+int process_ipaddress(int argc, char **argv,int *new_argc ,char ***new_argv){
 
 		if(!is_ipaddress(argv[0]))
 			return 0; // not an ipaddress, time time leave time place
@@ -125,16 +114,13 @@ int is_shortcut(char* test_string){
 }
 
 int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
-	print_args(argc,argv);
 	if(!argc) { // sanity check to make sure nothing slipped through
 		// bail early
 		*new_argc = argc;
 		*new_argv = argv;
 		return 0;
 	} 
-
 	int shortcut_index = is_shortcut(argv[0]);
-	
 	if(shortcut_index != -1)
 	{
 		//printf("Shortcut Found %d %s\n",shortcut_index,shortcuts[shortcut_index].full_version[0]);
@@ -180,7 +166,8 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 // thank you very much
 int adb_extended_commandline(int argc , char **argv){
 	
-	D("adb_extended_commandline\n");
+	D("PreProcess Command Line\n");
+	TRACE_INLINE_ARGS
 	char **new_argv=NULL  ; int new_argc = 0;
 	if(!argc) {
 		D("adb_extended_commandline argc:%d\n",argc);

@@ -29,7 +29,7 @@
 #include "sysdeps.h"
 #include "adb.h"
 #include "adb_auth.h"
-
+#include "adb_extended.h"
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 #if !ADB_HOST
@@ -40,7 +40,9 @@
 #else
 #include "usb_vendors.h"
 #endif
-int adb_extended_commandline(int argc , char** argv);
+
+
+
 #if ADB_TRACE
 ADB_MUTEX_DEFINE( D_lock );
 #endif
