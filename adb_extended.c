@@ -7,122 +7,9 @@
 #include <arpa/inet.h>
 #include "sysdeps.h"
 #include "adb.h"
+#include "adb_extended.h"
 
-#define ARRAYSIZE(a) ((int)(sizeof(a) / sizeof(*(a))))
-#define MAX_TOKENS 255
-struct input_keyevents{
-	char * name;
-	char * alt_name;
-	char * keycode;
-} keyevents[] = { 
-		{ "MENU","menu","82"},
-		{ "UNLOCK","unlock","82"},
-		{ "EXPLORER", "browser","64"},
-		{ "BACK","bk","4"},
-		{ "POWER","pwr","26"},
-		{ "DPAD_UP","up","19"},
-		{ "DPAD_DOWN","down","20"},
-		{ "DPAD_LEFT","left","21"},
-		{ "DPAD_RIGHT","right","22"},
-		{ "TAB","tab","61"},
-		{ "ENTER","ent","66"} };
 
-#define COMMAND_HAS_ARGS 1
-#define COMMAND_NO_ARGS 0
-#define COMMAND_TYPE_SHELL 1
-#define COMMAND_TYPE_ADB 0
-struct command_shortcut {
-		char * short_version;
-		int token_total;
-		int process_args; 
-		int is_shell;
-		char * full_version[MAX_TOKENS];
-} shortcuts[]  = { 
-					{ "ver",		1,COMMAND_NO_ARGS 	,COMMAND_TYPE_ADB,{"version"}},
-					{ "dev",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_ADB,{"devices"}},
-					{ "d",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_ADB,{"devices"}},
-					{ "dl",			2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_ADB,{"devices","-l"}},
-					{ "kill",		1,COMMAND_NO_ARGS 	,COMMAND_TYPE_ADB,{"kill-server"}},
-					{ "pl",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_ADB,{"pull"}},
-					{ "pu",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_ADB,{"push"}},
-					{ "wfd",		1,COMMAND_NO_ARGS 	,COMMAND_TYPE_ADB,{"wait-for-device"}},
-					// reboot commands, some device specific
-					{ "recovery",	2,COMMAND_NO_ARGS 	,COMMAND_TYPE_ADB,{"reboot","recovery"}},
-					{ "fastboot",	2,COMMAND_NO_ARGS 	,COMMAND_TYPE_ADB,{"reboot","bootloader"}},
-					{ "fb",			2,COMMAND_NO_ARGS 	,COMMAND_TYPE_ADB,{"reboot","bootloader"}},
-					{ "rec",		2,COMMAND_NO_ARGS 	,COMMAND_TYPE_ADB,{"reboot","recovery"}},
-					{ "lca",		9,COMMAND_NO_ARGS 	,COMMAND_TYPE_ADB,{"logcat","-b","system","-b","radio","-b","events","-b","main" }},
-					{ "lc",			1,COMMAND_HAS_ARGS	,COMMAND_TYPE_ADB,{"logcat"}},
-					{ "sh",			0,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{}},
-					{ "s",			0,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{}},
-					{ "remount",	2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"mount","-orw,remount"}},
-					{ "st",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"start"}},
-					{ "ks",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"stop"}},
-					{ "dmesg",		1,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"dmesg"}},
-					{ "mount",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"mount"}},
-					{ "umount",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"umount"}},
-					{ "lspart",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"mount | grep"}},
-					{ "uname",		2,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"cat","proc/version"}},
-					{ "gp",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"getprop"}},
-					{ "du",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"du"}},
-					{ "df",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"df"}},
-					{ "dfh",		2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"df","-h"}},
-					{ "sp",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"setprop"}},
-					{ "cat",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"cat"}},
-					{ "c",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"cat"}},
-					{ "echo",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"echo"}},
-					{ "ps",			1,COMMAND_NO_ARGS	,COMMAND_TYPE_SHELL,{"ps"}},
-					{ "mv",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"mv"}},
-					{ "cp",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"cp"}},
-					{ "rm",			1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"rm"}},
-					{ "rmf",		2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"rm","-f"}},
-					{ "symlink",	2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"ln","-s"}},
-					{ "netcfg",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"netcfg"}},
-					
-					{ "touch",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"touch"}},
-					{ "lsusb",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"lsusb"}},
-					{ "mkdir",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"mkdir"}},
-					{ "grp",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"getprop | grep"}},
-					{ "wp",			1,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"watchprops"}},
-					{ "chmod",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"chmod"}},
-					{ "insmod",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"insmod"}},
-					{ "gevt",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"getevent"}},
-					{ "sevt",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"sendevent"}},
-					{ "lsmod",		1,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"lsmod"}},
-					// archos specialness
-					{ "kdf",		1,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"kd_flasher"}},
-					{ "updaterd",	1,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"updaterd"}},
-					{ "sde",		2,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"reboot_into","sde"}},
-					{ "into",		2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"reboot_into","-s"}},
-					{ "arec",		2,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"reboot_into","recovery"}},
-					{ "android",	2,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"reboot_into","android"}},
-					// samsung download mode
-					
-					{ "ll",			2,COMMAND_HAS_ARGS	,COMMAND_TYPE_SHELL,{"ls","-l"}},
-					{ "l",			2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"ls","-la"}},
-					{ "lha",		2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"ls","-lha"}},
-					{ "download",	2,COMMAND_NO_ARGS	,COMMAND_TYPE_ADB,{"reboot","download"}}, 
-					{ "temp-root",	1,COMMAND_NO_ARGS	,COMMAND_TYPE_SHELL,{"echo 'ro.kernel.qemu=1'>/data/local.prop"}},
-					{ "un-root",	1,COMMAND_NO_ARGS	,COMMAND_TYPE_SHELL,{"echo '#'>/data/local.prop"}},
-					// Input				
-					{ "key",		2,COMMAND_HAS_ARGS	,COMMAND_TYPE_SHELL,{"input","keyevent"}},
-					{ "tw",			2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"input","text"}},
-					{ "tap",		2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"input","tap"}},
-					{ "swipe",		2,COMMAND_HAS_ARGS 	,COMMAND_TYPE_SHELL,{"input","swipe"}},
-					// Activity Manager Startups
-					{ "vending",	6,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.vending/.AssetBrowserActivity"}},
-					{ "settings",	6,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}}
-} ;
-
-static const int shortcut_total = ARRAYSIZE(shortcuts);
-static const int keyevents_total = ARRAYSIZE(keyevents);
-int print_args(int argc, char **argv); 
-int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv);
-int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv);
-int process_ipaddress(int argc, char **argv,int *new_argc ,char ***new_argv);
-int is_keyevent(char* test_string);
-int is_shortcut(char* test_string);
-int is_ipaddress(char *ipaddress);
 int is_ipaddress(char *ipaddress)
 {
 
@@ -134,20 +21,9 @@ int is_ipaddress(char *ipaddress)
     result = inet_pton(AF_INET, lineptr, &(sa.sin_addr));	
     return result != 0;
 }
-int process_ipaddress(int argc, char **argv,int *new_argc ,char ***new_argv){
 
-		if(!is_ipaddress(argv[0]))
-			return 0; // not an ipaddress, time time leave time place
-
-		*new_argc =2;		
-		(*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
-		(*new_argv)[0]="connect";
-		(*new_argv)[1]=argv[0];
-		return 1;		
-		
-}
 // Cheeky Debug function 
-int print_args(int argc, char **argv)
+static int print_args(int argc, char **argv)
 {
 	int counter = 0;
 	D("argc:%d\n",argc);	
@@ -157,6 +33,12 @@ int print_args(int argc, char **argv)
 
 	return 0;
 }
+
+// is_keyevent : Test test_string to see if it contains either input_keyevents.name or 
+// input_keyevents.alt_name. 
+// Return: When no match is found -1 is retruned, otherwise the input_keyevents.keycode is returned
+// input_keyevents.keycode is the value of the internal android keyevent code, a full list can be found
+// at frameworks/base/core/java/android/view/KeyEvent.java
 int is_keyevent(char* test_string){
 
 	int counter = 0 ; int keyevent_index = -1 ; int test_strlen = strlen(test_string) ;
@@ -182,6 +64,18 @@ int is_keyevent(char* test_string){
 
 }
 
+
+static int process_ipaddress(int argc, char **argv,int *new_argc ,char ***new_argv){
+
+		if(!is_ipaddress(argv[0]))
+			return 0; // not an ipaddress, time time leave time place
+
+		*new_argc =2;		
+		(*new_argv) = (char**) malloc(*new_argc * sizeof(char**));
+		(*new_argv)[0]="connect";
+		(*new_argv)[1]=argv[0];
+		return 1;				
+}
 int process_keyevent_chain(int argc, char **argv,int *new_argc ,char ***new_argv){
 
 	// counters and state management 
