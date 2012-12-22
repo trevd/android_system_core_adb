@@ -103,7 +103,7 @@ static struct command_shortcut {
 					{ "vending",	6,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.vending/.AssetBrowserActivity"}},
 					{ "settings",	6,COMMAND_NO_ARGS 	,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}}
 } ;
-
+// Keyevents List  frameworks/base/core/java/android/view/KeyEvent.java
 static struct input_keyevents{
 	char * name;
 	char * alt_name;
@@ -111,16 +111,21 @@ static struct input_keyevents{
 } keyevents[] = { 
 		{ "HOME","home","3"},
 		{ "BACK","bk","4"},		
+		{ "CALL","call","5"},
+		{ "ENDCALL","hangup","6"},
 		{ "DPAD_UP","up","19"},
 		{ "DPAD_DOWN","down","20"},
 		{ "DPAD_LEFT","left","21"},
 		{ "DPAD_RIGHT","right","22"},
 		{ "POWER","pwr","26"},
+		{ "CAMERA","cam","27"},
 		{ "TAB","tab","61"},
 		{ "EXPLORER", "browser","64"},
 		{ "ENTER","ent","66"},
 		{ "MENU","menu","82"},
-		{ "UNLOCK","unlock","82"}
+		{ "UNLOCK","unlock","82"},
+		{ "NOTIFICATION","systray","83"},
+		{ "SEARCH","search","84"}
 };
 
 static const int shortcut_total = ARRAYSIZE(shortcuts);
