@@ -49,6 +49,7 @@ static struct command_shortcut {
 					{ "l",			2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-la"}},
 					{ "lha",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-lha"}},
 					// mount helper
+					{ "adb-remount",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"remount"}},
 					{ "mount",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mount"}},
 					{ "umount",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"umount"}},
 					{ "lspart",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mount | grep"}},
@@ -75,6 +76,8 @@ static struct command_shortcut {
 					{ "mv",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mv"}},
 					{ "cp",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"cp"}},
 					{ "rm",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"rm"}},
+					{ "svc",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"svc"}},
+					{ "service",	1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"service"}},
 					{ "rmf",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"rm","-f"}},
 					{ "symlink",	2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ln","-s"}},
 					{ "netcfg",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"netcfg"}},
@@ -104,9 +107,10 @@ static struct command_shortcut {
 					{ "un-root",	1,COMMAND_ARGS_NONE				,COMMAND_TYPE_SHELL,{"echo '#'>/data/local.prop"}},
 					// Input				
 					{ "key",		2,COMMAND_ARGS_APPEND			,COMMAND_TYPE_SHELL,{"input","keyevent"}},
-					{ "tw",			2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","text"}},
+					{ "tw",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"CLASSPATH=/system/framework/input.jar app_process /system/bin com.android.commands.input.Input text"}},
 					{ "tap",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","tap"}},
 					{ "swipe",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","swipe"}},
+					{ "input",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input"}},
 					// Activity Manager Startups
 					{ "vending",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.vending/.AssetBrowserActivity"}},
 					{ "settings",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}}
@@ -128,12 +132,31 @@ static struct input_keyevents{
 		{ "POWER","pwr","26"},
 		{ "CAMERA","cam","27"},
 		{ "TAB","tab","61"},
+		{ "SPACE","space","62"},
+		{ "SPACE","spc","62"},
 		{ "EXPLORER", "browser","64"},
 		{ "ENTER","ent","66"},
+		{ "DELETE","del","67"},
 		{ "MENU","menu","82"},
 		{ "UNLOCK","unlock","82"},
 		{ "NOTIFICATION","systray","83"},
-		{ "SEARCH","search","84"}
+		{ "SEARCH","search","84"},
+		{ "MEDIA_PLAY_PAUSE","mplay","85"},
+		{ "MEDIA_STOP","mstop","86"},
+		{ "MEDIA_NEXT","mnext","87"},
+		{ "MEDIA_PREVIOUS","mprev","88"},
+		{ "MEDIA_REWIND","mrw","89"},
+		{ "MEDIA_FAST_FORWARD","mffw","90"},
+		{ "MUTE","mute","91"},
+		{ "PAGE_UP","pgup","92"},
+		{ "PAGE_DOWN","pgdwm","93"},
+		{ "APP_SWITCH","appsw","187"},
+		{ "MANNER_MODE","manner","205"},
+		{ "3D_MODE","3dmode", "206"},
+		{ "CONTACTS","contacts","207"},
+		{ "CALENDAR","calendar","208"},
+		{ "MUSIC","music", "209"},
+		{ "CALCULATOR","calc","210"}
 };
 
 static const int shortcut_total = ARRAYSIZE(shortcuts);

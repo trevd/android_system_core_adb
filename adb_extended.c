@@ -58,9 +58,7 @@ int is_keyevent(char* test_string){
 		}
 	}
 	return keyevent_index;
-
 }
-
 
 int process_ipaddress(int argc, char **argv,int *new_argc ,char ***new_argv){
 		
