@@ -3,9 +3,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#ifdef HAVE_WINSOCK
+#include <winsock2.h>
+#else
 #include <sys/sysinfo.h>
-#include <sys/types.h>
 #include <arpa/inet.h>
+
+#endif
+
+
+
+
+#include <sys/types.h>
+
 #include "sysdeps.h"
 #include "adb.h"
 #include "usb_vendors.h"
@@ -17,7 +27,34 @@ char *format_shortcut(int shortcut_index,int argc, char **argv)
 	
 	return NULL;
 }
-
+// Get Your Fucking Winsocks On!!! Because they have to be different
+#ifdef HAVE_WINSOCK
+int is_ipaddress(char *ipaddress)
+{
+    WSADATA wsaData;
+    int iResult;
+    unsigned long ulAddr = INADDR_NONE;
+    // Initialize Winsock
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (iResult != 0) {
+        return 0;
+    }
+	//--------------------------------
+	// Call inet_addr(). If the call succeeds,
+	// the result variable will hold a IN_ADDR
+    ulAddr = inet_addr(ipaddress);
+    if ( ulAddr == INADDR_NONE ) {
+        WSACleanup();
+        return 0;
+    }   
+    if (ulAddr == INADDR_ANY) {
+        WSACleanup();
+        return 0;  
+    }    
+    WSACleanup();
+    return 1;
+}
+#else
 int is_ipaddress(char *ipaddress)
 {
 
@@ -26,10 +63,11 @@ int is_ipaddress(char *ipaddress)
     char* ipcpy= (char*) malloc(strlen(ipaddress) * sizeof(char));
     strcpy(ipcpy,ipaddress);
     char * lineptr = strsep(&ipcpy,":");
+    
     result = inet_pton(AF_INET, lineptr, &(sa.sin_addr));	
     return result != 0;
 }
-
+#endif
 
 // is_keyevent : Test test_string to see if it contains either input_keyevents.name or 
 // input_keyevents.alt_name. 

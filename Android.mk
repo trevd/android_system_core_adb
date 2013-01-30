@@ -42,6 +42,7 @@ ifeq ($(HOST_OS),windows)
     LOCAL_C_INCLUDES += /usr/include/w32api/ddk
   endif
   ifneq ($(strip $(USE_MINGW)),)
+	EXTRA_SRCS += strsep.c
     # MinGW under Linux case
     LOCAL_LDLIBS += -lws2_32 -lgdi32
     USE_SYSDEPS_WIN32 := 1
