@@ -12,16 +12,6 @@
 #include "adb_extended.h"
 
 #define  TRACE_TAG  TRACE_EXT
-void add_additional_usb_vendors(){
-	D("Adding Amazon Vendor");
-	vendorIds[vendorIdCount++] = (int)VENDOR_ID_AMAZON;
-	D("Adding Oppo Vendor");
-	vendorIds[vendorIdCount++] = (int)VENDOR_ID_OPPO;
-//#ifdef BUILT_IN_VENDOR_COUNT
-#undef BUILT_IN_VENDOR_COUNT
-//#enddef
-#define BUILT_IN_VENDOR_COUNT    (sizeof(builtInVendorIds)/sizeof(builtInVendorIds[0]))
-}
 char *format_shortcut(int shortcut_index,int argc, char **argv)
 {
 	
@@ -268,7 +258,7 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 // thank you very much
 int adb_extended_commandline(int argc , char **argv){
 	
-	add_additional_usb_vendors();
+	
 	D("PreProcess Command Line\n");
 	//TRACE_INLINE_ARGS
 	

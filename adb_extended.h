@@ -14,8 +14,7 @@
 
 #define COMMAND_SHORTCUT_NOT_FOUND -1
 #define COMMAND_LINE_PROCESS_DONE 0
-#define VENDOR_ID_AMAZON    0x1949
-#define VENDOR_ID_OPPO	  0x22D9
+
 
 static struct command_shortcut {
 		char * short_version;
@@ -24,7 +23,8 @@ static struct command_shortcut {
 		int command_type;
 		void *full_version[COMMAND_MAX_TOKENS];
 } shortcuts[]  = { 
-					{ "ver",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"version"}},
+					
+					{ "ver",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"version"}},
 					{ "dev",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"devices"}},
 					{ "d",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"devices"}},
 					{ "dl",			2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"devices","-l"}},
