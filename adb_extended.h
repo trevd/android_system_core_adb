@@ -15,6 +15,7 @@
 #define COMMAND_SHORTCUT_NOT_FOUND -1
 #define COMMAND_LINE_PROCESS_DONE 0
 #define VENDOR_ID_AMAZON    0x1949
+#define VENDOR_ID_OPPO	  0x22D9
 
 static struct command_shortcut {
 		char * short_version;

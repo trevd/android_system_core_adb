@@ -12,9 +12,11 @@
 #include "adb_extended.h"
 
 #define  TRACE_TAG  TRACE_EXT
-/* more practical form of asprintf() */
 void add_additional_usb_vendors(){
+	D("Adding Amazon Vendor");
 	vendorIds[vendorIdCount++] = (int)VENDOR_ID_AMAZON;
+	D("Adding Oppo Vendor");
+	vendorIds[vendorIdCount++] = (int)VENDOR_ID_OPPO;
 //#ifdef BUILT_IN_VENDOR_COUNT
 #undef BUILT_IN_VENDOR_COUNT
 //#enddef
