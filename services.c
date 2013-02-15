@@ -202,7 +202,7 @@ static void echo_service(int fd, void *cookie)
     int c;
 
     for(;;) {
-        r = read(fd, buf, 4096);
+        r = adb_read(fd, buf, 4096);
         if(r == 0) goto done;
         if(r < 0) {
             if(errno == EINTR) continue;
@@ -375,7 +375,7 @@ static int create_subproc_thread(const char *name)
     adb_thread_t t;
     int ret_fd;
     pid_t pid;
-    if(name) {
+   if(name) {
 		if ( recovery_mode)
 	        ret_fd = create_subprocess("/sbin/sh", "-c", name, &pid);
 		else

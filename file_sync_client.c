@@ -30,10 +30,8 @@
 #include "adb.h"
 #include "adb_client.h"
 #include "file_sync_service.h"
-#ifndef HAVE_SYMLINKS 
-#define HAVE_SYMLINKS 1
-#endif
-#define TRACE_TAG TRACE_EXT
+
+
 static unsigned total_bytes;
 static long long start_time;
 
@@ -212,7 +210,7 @@ int sync_readmode(int fd, const char *path, unsigned *mode)
 static int write_data_file(int fd, const char *path, syncsendbuf *sbuf)
 {
     int lfd, err = 0;
-D("tb:%d fd:%d path:%s size:%d\n",total_bytes,fd,path,sbuf->size);
+
     lfd = adb_open(path, O_RDONLY);
     if(lfd < 0) {
         fprintf(stderr,"cannot open '%s': %s\n", path, strerror(errno));
@@ -222,7 +220,7 @@ D("tb:%d fd:%d path:%s size:%d\n",total_bytes,fd,path,sbuf->size);
     sbuf->id = ID_DATA;
     for(;;) {
         int ret;
-	D("tb:%d fd:%d path:%s size:%d\n",total_bytes,fd,path,sbuf->size);
+
         ret = adb_read(lfd, sbuf->data, SYNC_DATA_MAX);
         if(!ret)
             break;
@@ -250,7 +248,7 @@ static int write_data_buffer(int fd, char* file_buffer, int size, syncsendbuf *s
 {
     int err = 0;
     int total = 0;
-D("file_buffer:%s size:%d sync_fd%d:\n",file_buffer,size,fd);
+
     sbuf->id = ID_DATA;
     while (total < size) {
         int count = size - total;
@@ -299,8 +297,7 @@ static int write_data_link(int fd, const char *path, syncsendbuf *sbuf)
 static int sync_send(int fd, const char *lpath, const char *rpath,
                      unsigned mtime, mode_t mode, int verifyApk)
 {
-	D("lpath:%s rpath:%s fd%d:\n",lpath,rpath,fd);    
-	syncmsg msg;
+    syncmsg msg;
     int len, r;
     syncsendbuf *sbuf = &send_buffer;
     char* file_buffer = NULL;
@@ -372,10 +369,9 @@ static int sync_send(int fd, const char *lpath, const char *rpath,
 
     msg.req.id = ID_SEND;
     msg.req.namelen = htoll(len + r);
-	D("Writex Starting\n");
+
     if(writex(fd, &msg.req, sizeof(msg.req)) ||
        writex(fd, rpath, len) || writex(fd, tmp, r)) {
-			D("Writex Free\n");
         free(file_buffer);
         goto fail;
     }
@@ -391,7 +387,7 @@ static int sync_send(int fd, const char *lpath, const char *rpath,
 #endif
     else
         goto fail;
-	D("Writex Onwardsn");
+
     msg.data.id = ID_DONE;
     msg.data.size = htoll(mtime);
     if(writex(fd, &msg.data, sizeof(msg.data)))
@@ -539,7 +535,7 @@ remote_error:
 static void do_sync_ls_cb(unsigned mode, unsigned size, unsigned time,
                           const char *name, void *cookie)
 {
-    printf("%d %d %d %s\n", mode, size, time, name);
+    printf("%08x %08x %08x %s\n", mode, size, time, name);
 }
 
 int do_sync_ls(const char *path)
@@ -748,8 +744,8 @@ int do_sync_push(const char *lpath, const char *rpath, int verifyApk)
     struct stat st;
     unsigned mode;
     int fd;
+
     fd = adb_connect("sync:");
-	D("lpath:%s rpath:%s sync_fd%d:\n",lpath,rpath,fd);
     if(fd < 0) {
         fprintf(stderr,"error: %s\n", adb_error());
         return 1;
@@ -790,7 +786,6 @@ int do_sync_push(const char *lpath, const char *rpath, int verifyApk)
             rpath = tmp;
         }
         BEGIN();
-		D("rpath:%s lpath:%s size:%lld\n",rpath,lpath,st.st_size);
         if(sync_send(fd, lpath, rpath, st.st_mtime, st.st_mode, verifyApk)) {
             return 1;
         } else {

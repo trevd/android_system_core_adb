@@ -359,7 +359,7 @@ typedef enum {
     TRACE_JDWP,      /* 0x100 */
     TRACE_SERVICES,
     TRACE_AUTH,
-	TRACE_EXT,
+    TRACE_EXT,
 } AdbTrace;
 
 #if ADB_TRACE
