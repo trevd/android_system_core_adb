@@ -3,17 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#ifdef HAVE_WINSOCK
+#ifdef _WIN32
 #include <winsock2.h>
-#else
-#include <sys/sysinfo.h>
-#include <arpa/inet.h>
-
 #endif
-
-
-
-
+#ifdef  __LINUX__
+#include <sys/sysinfo.h>
+#endif
+#include <arpa/inet.h>
 #include <sys/types.h>
 
 #include "sysdeps.h"
