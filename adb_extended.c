@@ -8,10 +8,9 @@
 #endif
 #ifdef  __LINUX__
 #include <sys/sysinfo.h>
-#endif
 #include <arpa/inet.h>
 #include <sys/types.h>
-
+#endif
 #include "sysdeps.h"
 #include "adb.h"
 #include "usb_vendors.h"
