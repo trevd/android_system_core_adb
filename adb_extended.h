@@ -31,8 +31,10 @@ static struct command_shortcut {
 					{ "kill",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"kill-server"}},
 					{ "pl",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"pull"}},
 					{ "pu",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"push"}},
-					{ "wfd",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"wait-for-device"}},
+					{ "wfd",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"wait-for-device"}},
 					// reboot commands, some device specific
+					{ "kick",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"reboot"}},
+					{ "rbt",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"reboot"}},
 					{ "recovery",	2,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"reboot","recovery"}},
 					{ "rec",		2,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"reboot","recovery"}},
 					{ "fastboot",	2,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"reboot","bootloader"}},
@@ -50,7 +52,7 @@ static struct command_shortcut {
 					{ "l",			2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-la"}},
 					{ "lha",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-lha"}},
 					// mount helper
-					{ "adb-remount",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"remount"}},
+					{ "adb-remount",1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"remount"}},
 					{ "mount",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mount"}},
 					{ "umount",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"umount"}},
 					{ "lspart",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mount | grep"}},
@@ -77,6 +79,8 @@ static struct command_shortcut {
 					{ "mv",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mv"}},
 					{ "cp",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"cp"}},
 					{ "rm",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"rm"}},
+					{ "id",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"id"}},
+					{ "wipe",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"wipe"}},
 					{ "svc",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"svc"}},
 					{ "service",	1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"service"}},
 					{ "rmf",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"rm","-f"}},
@@ -84,8 +88,10 @@ static struct command_shortcut {
 					{ "netcfg",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"netcfg"}},
 					{ "touch",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"touch"}},
 					{ "lsusb",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"lsusb"}},
-					{ "mkdir",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mkdir"}},
+					{ "mkdir",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mkdir","-p"}},
 					{ "chmod",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"chmod"}},
+					{ "chown",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"chown"}},
+					{ "755",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"chmod","755"}},
 					// kernel module commands
 					{ "lsmod",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"lsmod"}},
 					{ "insmod",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"insmod"}},
@@ -93,6 +99,10 @@ static struct command_shortcut {
 					// input events
 					{ "gevt",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"getevent"}},
 					{ "sevt",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"sendevent"}},
+					
+					// busybox
+					{ "busybox",	1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"busybox"}},
+					{ "bb",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"busybox"}},
 					
 					// archos specific device management.... because they're special
 					{ "kdf",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"kd_flasher"}},
@@ -112,6 +122,11 @@ static struct command_shortcut {
 					{ "tap",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","tap"}},
 					{ "swipe",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","swipe"}},
 					{ "input",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input"}},
+					
+					// easy filesystem list directorys
+					{ "lsapp",		3,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-l","/system/app"}}, 
+					{ "lsbin",		3,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-l","/system/bin"}},
+					
 					// Activity Manager Startups
 					{ "vending",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.vending/.AssetBrowserActivity"}},
 					{ "settings",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}}
