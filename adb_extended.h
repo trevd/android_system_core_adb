@@ -121,7 +121,7 @@ static struct command_shortcut {
 					{ "un-root",	1,COMMAND_ARGS_NONE				,COMMAND_TYPE_SHELL,{"echo '#'>/data/local.prop"}},
 					// Input				
 					{ "key",		2,COMMAND_ARGS_APPEND			,COMMAND_TYPE_SHELL,{"input","keyevent"}},
-					{ "tw",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"CLASSPATH=/system/framework/input.jar app_process /system/bin com.android.commands.input.Input text"}},
+					{ "tw",			1,COMMAND_ARGS_APPEND			,COMMAND_TYPE_SHELL,{"CLASSPATH=/system/framework/input.jar app_process /system/bin com.android.commands.input.Input text"}},
 					{ "tap",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","tap"}},
 					{ "swipe",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","swipe"}},
 					{ "input",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input"}},
@@ -132,8 +132,11 @@ static struct command_shortcut {
 					
 					// Activity Manager Startups
 					{ "vending",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.vending/.AssetBrowserActivity"}},
-					{ "settings",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}}
-} ;
+					{ "settings",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}},
+					{ "about",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings'$'DeviceInfoSettingsActivity"}},
+					{ "term",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","jackpal.androidterm/.Term"}}
+				 };
+					 
 // Keyevents List  frameworks/base/core/java/android/view/KeyEvent.java
 static struct input_keyevents{
 	char * name;
