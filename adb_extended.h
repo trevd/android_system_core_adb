@@ -30,7 +30,7 @@ static struct command_shortcut {
 					{ "dl",			2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"devices","-l"}},
 					{ "kill",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"kill-server"}},
 					{ "pl",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"pull"}},
-					{ "pu",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"push"}},
+					{ "pu",			1,COMMAND_ARGS_CONCAT 			,COMMAND_TYPE_ADB,{"push"}},
 					{ "wfd",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"wait-for-device"}},
 					// reboot commands, some device specific
 					{ "kick",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"reboot"}},
@@ -103,7 +103,9 @@ static struct command_shortcut {
 					// busybox
 					{ "busybox",	1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"busybox"}},
 					{ "bb",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"busybox"}},
-					
+					{ "bootimg-tools",	1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"bootimg-tools"}},
+					{ "bits",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"bootimg-tools"}},
+					{ "bitsup",			5,COMMAND_ARGS_CONCAT 			,COMMAND_TYPE_SHELL,{"bootimg-tools"," u ","1"," -f ","2"}},
 					// archos specific device management.... because they're special
 					{ "kdf",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"kd_flasher"}},
 					{ "updaterd",	1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"updaterd"}},
@@ -111,7 +113,8 @@ static struct command_shortcut {
 					{ "into",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"reboot_into","-s"}},
 					{ "arec",		2,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"reboot_into","recovery"}},
 					{ "android",	2,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"reboot_into","android"}},	
-					
+					{ "remountall",	9,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mount","-o","rw,remount","/","&&","mount","-o","rw,remount","/system"}},
+					{ "mnt",	1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"mount"}},
 
 					// write a local.prop --- handy temp rooting
 					{ "temp-root",	1,COMMAND_ARGS_NONE				,COMMAND_TYPE_SHELL,{"echo 'ro.kernel.qemu=1'>/data/local.prop"}},

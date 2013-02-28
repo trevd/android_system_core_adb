@@ -13,6 +13,7 @@
 #endif
 #include "sysdeps.h"
 #include "adb.h"
+#include "adb_client.h"
 #include "usb_vendors.h"
 #include "adb_extended.h"
 
@@ -294,7 +295,43 @@ int adb_extended_commandline(int argc , char **argv){
 	
 	D("PreProcess Command Line\n");
 	//TRACE_INLINE_ARGS
+/*	char*  tmp = adb_query("host:devices");
+	char *str_horizontal_tab =tmp;
+	fprintf(stderr,"%s\n",tmp);
+	char *str_line_feed ;
+	while(!	str_horizontal_tab){
+		str_horizontal_tab= strchr(str_horizontal_tab,9);
+			fprintf(stderr,"%s\n",str_horizontal_tab);
+		if(!str_horizontal_tab){
+		
+			break ;
+			//if((str_line_feed = strchr(str_line_feed,10)))
+			//	fprintf(stderr,"%s\n",str_line_feed);
+		}
+		str_horizontal_tab= strchr(str_horizontal_tab,9);
+		
+	}
+	*/
+	/*int c=0;
+	for(c=0;c< strlen(tmp); c++) 
+		fprintf(stderr,"[%03d]",(int)tmp[c]); 
+			fprintf(stderr,"\n",(int)tmp[c]); 
+	for(c=0;c< strlen(tmp); c++) {
+		if((int)tmp[c]==10)
+			fprintf(stderr,"[*LF]");
+		else if((int)tmp[c]==9)
+			fprintf(stderr,"[*HT]");
+		else
+			fprintf(stderr,"[  %c]",(int)tmp[c]);  
 	
+	}
+		fprintf(stderr,"\n",(int)tmp[c]); 	
+	exit(0);
+		
+	while(strnl){
+		D("newline found %p %p\n",tmp,strnl);
+		strnl = strchr(strnl,'\n');
+	}*/
 	char **new_argv=NULL; int new_argc = -1;
 	new_argv=argv; new_argc =argc;
 	if(!argc) {
