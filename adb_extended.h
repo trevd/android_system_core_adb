@@ -30,7 +30,7 @@ static struct command_shortcut {
 					{ "dl",			2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"devices","-l"}},
 					{ "kill",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"kill-server"}},
 					{ "pl",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"pull"}},
-					{ "pu",			1,COMMAND_ARGS_CONCAT 			,COMMAND_TYPE_ADB,{"push"}},
+					{ "pu",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"push"}},
 					{ "wfd",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"wait-for-device"}},
 					// reboot commands, some device specific
 					{ "kick",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"reboot"}},
