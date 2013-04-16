@@ -1182,7 +1182,7 @@ static int should_drop_privileges() {
             }
         }
     }
-    return secure;
+    return 1;
 #endif /* ALLOW_ADBD_ROOT */
 }
 #endif /* !ADB_HOST */

@@ -117,14 +117,14 @@ void restart_root_service(int fd, void *cookie)
         writex(fd, buf, strlen(buf));
         adb_close(fd);
     } else {
-        property_get("ro.debuggable", value, "");
-        if (strcmp(value, "1") != 0) {
-            snprintf(buf, sizeof(buf), "adbd cannot run as root in production builds\n");
-            writex(fd, buf, strlen(buf));
-            adb_close(fd);
-            return;
-        }
-
+        //property_get("ro.debuggable", value, "");
+        //if (strcmp(value, "1") != 0) {
+        //    snprintf(buf, sizeof(buf), "adbd cannot run as root in production builds\n");
+        //    writex(fd, buf, strlen(buf));
+       //     adb_close(fd);
+        //    return;
+        //}
+        
         property_set("service.adb.root", "1");
         snprintf(buf, sizeof(buf), "restarting adbd as root\n");
         writex(fd, buf, strlen(buf));
@@ -333,8 +333,10 @@ static int create_subprocess(const char *cmd, const char *arg0, const char *arg1
 
 #if ADB_HOST
 #define SHELL_COMMAND "/bin/sh"
+#define ALTERNATE_SHELL_COMMAND ""
 #else
 #define SHELL_COMMAND "/system/bin/sh"
+#define ALTERNATE_SHELL_COMMAND "/sbin/sh"
 #endif
 
 #if !ADB_HOST
@@ -375,16 +377,19 @@ static int create_subproc_thread(const char *name)
     adb_thread_t t;
     int ret_fd;
     pid_t pid;
-   if(name) {
-		if ( recovery_mode)
-	        ret_fd = create_subprocess("/sbin/sh", "-c", name, &pid);
-		else
-	        ret_fd = create_subprocess(SHELL_COMMAND, "-c", name, &pid);
+    const char* shell_command;
+    struct stat filecheck;
+    if (stat(ALTERNATE_SHELL_COMMAND, &filecheck) == 0) {
+        shell_command = ALTERNATE_SHELL_COMMAND;
+    }
+    else {
+        shell_command = SHELL_COMMAND;
+    }
+    
+    if(name) {
+        ret_fd = create_subprocess(shell_command, "-c", name, &pid);
     } else {
-		if(recovery_mode)
-	        ret_fd = create_subprocess("/sbin/sh", "-", 0, &pid);
-		else
-	        ret_fd = create_subprocess(SHELL_COMMAND, "-", 0, &pid);
+        ret_fd = create_subprocess(shell_command, "-", 0, &pid);
     }
     D("create_subprocess() ret_fd=%d pid=%d\n", ret_fd, pid);
 

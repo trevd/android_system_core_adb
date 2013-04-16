@@ -125,16 +125,21 @@ static struct command_shortcut {
 					{ "tap",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","tap"}},
 					{ "swipe",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input","swipe"}},
 					{ "input",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"input"}},
+					{ "ins",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_ADB,{"install"}},
 					
 					// easy filesystem list directorys
 					{ "lsapp",		3,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-l","/system/app"}}, 
 					{ "lsbin",		3,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-l","/system/bin"}},
+					{ "lsxbin",		3,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-l","/system/xbin"}},
+					{ "lsdev",		3,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-l","/dev"}},
+					{ "lsdata",		3,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"ls","-l","/data"}},
 					
 					// Activity Manager Startups
 					{ "vending",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.vending/.AssetBrowserActivity"}},
 					{ "settings",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings"}},
 					{ "about",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","com.android.settings/.Settings'$'DeviceInfoSettingsActivity"}},
-					{ "term",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","jackpal.androidterm/.Term"}}
+					{ "term",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","jackpal.androidterm/.Term"}},
+					{ "wifikey",	6,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"am", "start","-a" ,"android.intent.action.MAIN","-n","org.exobel.routerkeygen/.ui.NetworksListActivity"}}
 				 };
 					 
 // Keyevents List  frameworks/base/core/java/android/view/KeyEvent.java
