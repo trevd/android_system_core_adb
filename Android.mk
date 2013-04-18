@@ -12,11 +12,11 @@ include $(CLEAR_VARS)
 # Default to a virtual (sockets) usb interface
 USB_SRCS :=
 EXTRA_SRCS :=
+
 ifeq ($(HOST_OS),linux)
   USB_SRCS := usb_linux.c
   EXTRA_SRCS := get_my_path_linux.c
   LOCAL_LDLIBS += -lrt -ldl -lpthread
-  LOCAL_CFLAGS += -D__LINUX__
 endif
 
 ifeq ($(HOST_OS),darwin)
@@ -64,9 +64,8 @@ LOCAL_SRC_FILES := \
 	$(EXTRA_SRCS) \
 	$(USB_SRCS) \
 	utils.c \
-	usb_vendors.c  \
+	usb_vendors.c \
 	adb_extended.c
-
 
 LOCAL_C_INCLUDES += external/openssl/include
 
@@ -120,7 +119,6 @@ LOCAL_SRC_FILES := \
 	utils.c \
 	adb_extended.c
 
-
 LOCAL_CFLAGS := -O2 -g -DADB_HOST=0 -Wall -Wno-unused-parameter
 LOCAL_CFLAGS += -D_XOPEN_SOURCE -D_GNU_SOURCE
 
@@ -163,7 +161,6 @@ LOCAL_SRC_FILES := \
 	usb_vendors.c \
 	fdevent.c \
 	adb_extended.c
-
 
 LOCAL_CFLAGS := \
 	-O2 \

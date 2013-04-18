@@ -30,12 +30,14 @@
 #include "sysdeps.h"
 #include "adb.h"
 #include "adb_auth.h"
+
 #include "adb_extended.h"
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 #if !ADB_HOST
 #include <private/android_filesystem_config.h>
-#include <linux/capability.h>
+#include <sys/capability.h>
 #include <linux/prctl.h>
 #include <sys/mount.h>
 #else
@@ -402,7 +404,9 @@ static char *connection_state_name(atransport *t)
     case CS_DEVICE:
         return "device";
     case CS_RECOVERY:
-        return "device";
+        return "recovery";
+    case CS_SIDELOAD:
+        return "sideload";
     case CS_OFFLINE:
         return "offline";
     default:
@@ -1184,7 +1188,7 @@ static int should_drop_privileges() {
             }
         }
     }
-    return 1;
+    return secure;
 #endif /* ALLOW_ADBD_ROOT */
 }
 #endif /* !ADB_HOST */
@@ -1240,7 +1244,7 @@ int adb_main(int is_daemon, int server_port)
     /* don't run as root if we are running in secure mode */
     if (should_drop_privileges()) {
         struct __user_cap_header_struct header;
-        struct __user_cap_data_struct cap;
+        struct __user_cap_data_struct cap[2];
 
         if (prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0) != 0) {
             exit(1);
@@ -1273,12 +1277,15 @@ int adb_main(int is_daemon, int server_port)
             exit(1);
         }
 
+        memset(&header, 0, sizeof(header));
+        memset(cap, 0, sizeof(cap));
+
         /* set CAP_SYS_BOOT capability, so "adb reboot" will succeed */
-        header.version = _LINUX_CAPABILITY_VERSION;
+        header.version = _LINUX_CAPABILITY_VERSION_3;
         header.pid = 0;
-        cap.effective = cap.permitted = (1 << CAP_SYS_BOOT);
-        cap.inheritable = 0;
-        capset(&header, &cap);
+        cap[CAP_TO_INDEX(CAP_SYS_BOOT)].effective |= CAP_TO_MASK(CAP_SYS_BOOT);
+        cap[CAP_TO_INDEX(CAP_SYS_BOOT)].permitted |= CAP_TO_MASK(CAP_SYS_BOOT);
+        capset(&header, cap);
 
         D("Local port disabled\n");
     } else {

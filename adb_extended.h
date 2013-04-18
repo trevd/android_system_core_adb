@@ -44,8 +44,8 @@ static struct command_shortcut {
 
 								
 					// logcat
-					{ "lca",		9,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"logcat","-b","system","-b","radio","-b","events","-b","main" }},
-					{ "lc",			1,COMMAND_ARGS_APPEND			,COMMAND_TYPE_ADB,{"logcat"}},
+					{ "lca",		10,COMMAND_ARGS_NONE 			,COMMAND_TYPE_ADB,{"logcat","-C","-b","system","-b","radio","-b","events","-b","main" }},
+					{ "lc",			1,COMMAND_ARGS_APPEND			,COMMAND_TYPE_ADB,{"logcat","-C"}},
 					{ "sh",			0,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{}},
 					{ "s",			0,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{}},
 					{ "ll",			2,COMMAND_ARGS_APPEND			,COMMAND_TYPE_SHELL,{"ls","-l"}},
