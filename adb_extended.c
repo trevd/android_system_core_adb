@@ -172,13 +172,21 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 		*new_argv = argv;
 		return 0;
 	} 
+	D("argv[0]==%s argc=%d\n",argv[0],argc);
+	while(argv[0][0]=='-'){
+		 D("switch detected argv[0]==%s argc=%d\n",argv[0],argc);
+		 
+		 argv+=2 ;
+		 argc-=2 ;
+	 }
 	
 	int shortcut_index = is_shortcut(argv[0]);
 	if(shortcut_index != COMMAND_SHORTCUT_NOT_FOUND)
 	{
+		
 		D("Test:SHORTCUT_COMMAND_INDEX=%d\n",shortcut_index);
 		// check to see if we should append or format passed argv values
-		int counter = 0;  *new_argc = 0; char *concat_command=NULL;
+		int counter = 0;  (*new_argc) = 0; char *concat_command=NULL;
 		switch(shortcuts[shortcut_index].process_args_type){
 			case COMMAND_ARGS_CONCAT:{
 				/* COMMAND_FORMAT_ARGS RULES OF ENGAGEMENT
@@ -287,6 +295,55 @@ int process_shortcut(int argc, char **argv,int *new_argc ,char ***new_argv){
 	D("Test:SHORTCUT_COMMAND_INDEX=%d\n",shortcut_index);
 	return 0;
 }
+int get_adb_server_port(){
+	 
+	 char* server_port_str = NULL;
+	 /* Validate and assign the server port */
+    server_port_str = getenv("ANDROID_ADB_SERVER_PORT");
+    int server_port = DEFAULT_ADB_PORT;
+    if (server_port_str && strlen(server_port_str) > 0) {
+        server_port = (int) strtol(server_port_str, NULL, 0);
+        if (server_port <= 0 || server_port > 65535) {
+            fprintf(stderr,
+                    "adb: Env var ANDROID_ADB_SERVER_PORT must be a positive number less than 65535. Got \"%s\"\n",
+                    server_port_str);
+            usage();       
+            return 0;
+        }
+    }
+    return server_port;
+}
+int process_devices(int argc , char **argv){
+	
+	if(argc == 0) return 0;
+	
+	
+	if(!get_adb_server_port()){
+		return 1;
+	}
+		
+	char *data = adb_query("host:devices");
+
+    int offset,res, count = 0;
+    char* device_name = calloc(1,strlen(data)+1);
+    char* device_state = calloc(1,strlen(data)+1);
+    while (2 == sscanf(data,"%s\t%s\n%n", device_name,device_state,&offset)) {
+        count += 1;
+        data += offset;
+        //fprintf(stderr,"1:%s State:%s %d %s", device_name,device_state, offset,data);
+        free(device_name);
+        free(device_state);
+        device_name = calloc(1,strlen(data)+1);
+        device_state = calloc(1,strlen(data)+1);
+    }
+    //fprintf(stderr,"2:%s %s %d", device_name,device_state, offset,data);
+	//fprintf(stderr,"%s%d  \ndata:%s\n", device_name, offset,data);
+    printf("count = %d\n", count);
+    return 0;
+	
+	
+}
+
 
 // It's alright We will take over commandline calling from here, 
 // thank you very much
@@ -295,23 +352,7 @@ int adb_extended_commandline(int argc , char **argv){
 	
 	D("PreProcess Command Line\n");
 	//TRACE_INLINE_ARGS
-/*	char*  tmp = adb_query("host:devices");
-	char *str_horizontal_tab =tmp;
-	fprintf(stderr,"%s\n",tmp);
-	char *str_line_feed ;
-	while(!	str_horizontal_tab){
-		str_horizontal_tab= strchr(str_horizontal_tab,9);
-			fprintf(stderr,"%s\n",str_horizontal_tab);
-		if(!str_horizontal_tab){
-		
-			break ;
-			//if((str_line_feed = strchr(str_line_feed,10)))
-			//	fprintf(stderr,"%s\n",str_line_feed);
-		}
-		str_horizontal_tab= strchr(str_horizontal_tab,9);
-		
-	}
-	*/
+	
 	/*int c=0;
 	for(c=0;c< strlen(tmp); c++) 
 		fprintf(stderr,"[%03d]",(int)tmp[c]); 
@@ -345,6 +386,10 @@ int adb_extended_commandline(int argc , char **argv){
 	 * 2. Check for pre-process shortcut
 	 * 3. Check for Keyevent(s) chain   
 	 */
+
+	//if(process_devices(argc,argv)){
+	//	return COMMAND_LINE_PROCESS_DONE;
+	//}
 	
 	if(process_ipaddress(argc,argv,&new_argc,&new_argv)){
 		// We have a valid ipaddress. The new_argv[] should now be "connect <ipaddress>"

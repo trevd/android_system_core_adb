@@ -67,7 +67,7 @@ static struct command_shortcut {
 					{ "grp",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"getprop | grep"}},
 					{ "wp",			1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"watchprops"}},
 					{ "sp",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"setprop"}},
-					{ "up",			7,COMMAND_ARGS_CONCAT			,COMMAND_TYPE_SHELL,{"sed -i -e 's/","1","=\\(.*\\)$/","1","=","2","/g' /system/build.prop"}},			
+					{ "upp",			7,COMMAND_ARGS_CONCAT			,COMMAND_TYPE_SHELL,{"sed -i -e 's/","1","=\\(.*\\)$/","1","=","2","/g' /system/build.prop"}},			
 					{ "updateprop",	7,COMMAND_ARGS_CONCAT			,COMMAND_TYPE_SHELL,{"sed -i -e 's/","1","=\\(.*\\)$/","1","=","2","/g' /system/build.prop"}},			
 					{ "du",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"du"}},
 					{ "df",			1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"df"}},
@@ -92,6 +92,7 @@ static struct command_shortcut {
 					{ "chmod",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"chmod"}},
 					{ "chown",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"chown"}},
 					{ "755",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"chmod","755"}},
+					{ "644",		2,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"chmod","644"}},
 					// kernel module commands
 					{ "lsmod",		1,COMMAND_ARGS_NONE 			,COMMAND_TYPE_SHELL,{"lsmod"}},
 					{ "insmod",		1,COMMAND_ARGS_APPEND 			,COMMAND_TYPE_SHELL,{"insmod"}},
