@@ -198,11 +198,6 @@ localfilesystem:<path>
     Variants of local:<path> that are used to access other Android
     socket namespaces.
 
-log:<name>
-    Opens one of the system logs (/dev/log/<name>) and allows the client
-    to read them directly. Used to implement 'adb logcat'. The stream
-    will be read-only for the client.
-
 framebuffer:
     This service is used to send snapshots of the framebuffer to a client.
     It requires sufficient privileges but works as follow:
@@ -225,27 +220,6 @@ framebuffer:
       If the adbd daemon doesn't have sufficient privileges to open
       the framebuffer device, the connection is simply closed immediately.
 
-dns:<server-name>
-    This service is an exception because it only runs within the ADB server.
-    It is used to implement USB networking, i.e. to provide a network connection
-    to the device through the host machine (note: this is the exact opposite of
-    network tethering).
-
-    It is used to perform a gethostbyname(<address>) on the host and return
-    the corresponding IP address as a 4-byte string.
-
-recover:<size>
-    This service is used to upload a recovery image to the device. <size>
-    must be a number corresponding to the size of the file. The service works
-    by:
-
-       - creating a file named /tmp/update
-       - reading 'size' bytes from the client and writing them to /tmp/update
-       - when everything is read successfully, create a file named /tmp/update.start
-
-    This service can only work when the device is in recovery mode. Otherwise,
-    the /tmp directory doesn't exist and the connection will be closed immediately.
-
 jdwp:<pid>
     Connects to the JDWP thread running in the VM of process <pid>.
 
@@ -266,3 +240,20 @@ sync:
     This starts the file synchronisation service, used to implement "adb push"
     and "adb pull". Since this service is pretty complex, it will be detailed
     in a companion document named SYNC.TXT
+
+reverse:<forward-command>
+    This implements the 'adb reverse' feature, i.e. the ability to reverse
+    socket connections from a device to the host. <forward-command> is one
+    of the forwarding commands that are described above, as in:
+
+      list-forward
+      forward:<local>;<remote>
+      forward:norebind:<local>;<remote>
+      killforward-all
+      killforward:<local>
+
+    Note that in this case, <local> corresponds to the socket on the device
+    and <remote> corresponds to the socket on the host.
+
+    The output of reverse:list-forward is the same as host:list-forward
+    except that <serial> will be just 'host'.

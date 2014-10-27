@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <fcntl.h>
-#include <sys/mount.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mount.h>
+#include <unistd.h>
 
 #include "sysdeps.h"
 
@@ -35,17 +35,16 @@ static char *find_mount(const char *dir)
 {
     int fd;
     int res;
-    int size;
     char *token = NULL;
     const char delims[] = "\n";
     char buf[4096];
 
-    fd = unix_open("/proc/mounts", O_RDONLY);
+    fd = unix_open("/proc/mounts", O_RDONLY | O_CLOEXEC);
     if (fd < 0)
         return NULL;
 
     buf[sizeof(buf) - 1] = '\0';
-    size = adb_read(fd, buf, sizeof(buf) - 1);
+    adb_read(fd, buf, sizeof(buf) - 1);
     adb_close(fd);
 
     token = strtok(buf, delims);
@@ -72,6 +71,8 @@ static char *find_mount(const char *dir)
 static int remount_system()
 {
     char *dev;
+    int fd;
+    int OFF = 0;
 
     if (system_ro == 0) {
         return 0;
@@ -81,6 +82,13 @@ static int remount_system()
 
     if (!dev)
         return -1;
+
+    fd = unix_open(dev, O_RDONLY | O_CLOEXEC);
+    if (fd < 0)
+        return -1;
+
+    ioctl(fd, BLKROSET, &OFF);
+    adb_close(fd);
 
     system_ro = mount(dev, "/system", "none", MS_REMOUNT, NULL);
 

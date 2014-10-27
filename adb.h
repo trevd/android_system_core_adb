@@ -36,7 +36,7 @@
 #define ADB_VERSION_MAJOR 1         // Used for help/version information
 #define ADB_VERSION_MINOR 0         // Used for help/version information
 
-#define ADB_SERVER_VERSION    31    // Increment this when we want to force users to start a new adb server
+#define ADB_SERVER_VERSION    32    // Increment this when we want to force users to start a new adb server
 
 typedef struct amessage amessage;
 typedef struct apacket apacket;
@@ -122,16 +122,19 @@ struct asocket {
         */
     void (*ready)(asocket *s);
 
+        /* shutdown is called by the peer before it goes away.
+        ** the socket should not do any further calls on its peer.
+        ** Always followed by a call to close. Optional, i.e. can be NULL.
+        */
+    void (*shutdown)(asocket *s);
+
         /* close is called by the peer when it has gone away.
         ** we are not allowed to make any further calls on the
         ** peer once our close method is called.
         */
     void (*close)(asocket *s);
 
-        /* socket-type-specific extradata */
-    void *extra;
-
-    	/* A socket is bound to atransport */
+        /* A socket is bound to atransport */
     atransport *transport;
 };
 
@@ -236,7 +239,7 @@ struct alistener
 
 void print_packet(const char *label, apacket *p);
 
-asocket *find_local_socket(unsigned id);
+asocket *find_local_socket(unsigned local_id, unsigned remote_id);
 void install_local_socket(asocket *s);
 void remove_socket(asocket *s);
 void close_all_sockets(atransport *t);
@@ -292,7 +295,7 @@ void init_usb_transport(atransport *t, usb_handle *usb, int state);
 void close_usb_devices();
 
 /* cause new transports to be init'd and added to the list */
-void register_socket_transport(int s, const char *serial, int port, int local);
+int register_socket_transport(int s, const char *serial, int port, int local);
 
 /* these should only be used for the "adb disconnect" command */
 void unregister_transport(atransport *t);
@@ -320,16 +323,11 @@ asocket*  create_jdwp_tracker_service_socket();
 int       create_jdwp_connection_fd(int  jdwp_pid);
 #endif
 
+int handle_forward_request(const char* service, transport_type ttype, char* serial, int reply_fd);
+
 #if !ADB_HOST
-typedef enum {
-    BACKUP,
-    RESTORE
-} BackupOperation;
-int backup_service(BackupOperation operation, char* args);
 void framebuffer_service(int fd, void *cookie);
-void log_service(int fd, void *cookie);
 void remount_service(int fd, void *cookie);
-char * get_log_file_path(const char * log_name);
 #endif
 
 /* packet allocator */
@@ -416,7 +414,7 @@ void adb_qemu_trace(const char* fmt, ...);
 #  define  D(...)          ((void)0)
 #  define  DR(...)         ((void)0)
 #  define  ADB_TRACING     0
-#endif
+#endif /* ADB_TRACE */
 
 
 #if !DEBUG_PACKETS
@@ -469,9 +467,15 @@ int connection_state(atransport *t);
 #define CS_RECOVERY   4
 #define CS_NOPERM     5 /* Insufficient permissions to communicate with the device */
 #define CS_SIDELOAD   6
+#define CS_UNAUTHORIZED 7
 
 extern int HOST;
 extern int SHELL_EXIT_NOTIFY_FD;
+
+typedef enum {
+    SUBPROC_PTY = 0,
+    SUBPROC_RAW = 1,
+} subproc_mode;
 
 #define CHUNK_SIZE (64*1024)
 
