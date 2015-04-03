@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-#import <Carbon/Carbon.h>
+#include <limits.h>
+#include <stdio.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "adb.h"
 
-void get_my_path(char *s, size_t maxLen)
+void get_my_path(char *exe, size_t maxLen)
 {
-    CFBundleRef mainBundle = CFBundleGetMainBundle();
-    CFURLRef executableURL = CFBundleCopyExecutableURL(mainBundle);
-    CFStringRef executablePathString = CFURLCopyFileSystemPath(executableURL, kCFURLPOSIXPathStyle);
-    CFRelease(executableURL);
-
-    CFStringGetFileSystemRepresentation(executablePathString, s, maxLen);
-    CFRelease(executablePathString);
+    char proc[64];
+    snprintf(proc, sizeof proc, "/proc/%d/exe", getpid());
+    int err = readlink(proc, exe, maxLen - 1);
+    if(err > 0) {
+        exe[err] = '\0';
+    } else {
+        exe[0] = '\0';
+    }
 }
 

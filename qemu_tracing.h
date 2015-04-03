@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (C) 2015 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,23 @@
  * limitations under the License.
  */
 
-#import <Carbon/Carbon.h>
-#include <unistd.h>
+/*
+ * Implements ADB tracing inside the emulator.
+ */
 
-#include "adb.h"
+#ifndef __QEMU_TRACING_H
+#define __QEMU_TRACING_H
 
-void get_my_path(char *s, size_t maxLen)
-{
-    CFBundleRef mainBundle = CFBundleGetMainBundle();
-    CFURLRef executableURL = CFBundleCopyExecutableURL(mainBundle);
-    CFStringRef executablePathString = CFURLCopyFileSystemPath(executableURL, kCFURLPOSIXPathStyle);
-    CFRelease(executableURL);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-    CFStringGetFileSystemRepresentation(executablePathString, s, maxLen);
-    CFRelease(executablePathString);
+/* Initializes connection with the adb-debug qemud service in the emulator. */
+int adb_qemu_trace_init(void);
+void adb_qemu_trace(const char* fmt, ...);
+
+#ifdef __cplusplus
 }
+#endif
 
+#endif /* __QEMU_TRACING_H */

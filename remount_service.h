@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 The Android Open Source Project
+ * Copyright (C) 2015 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,12 @@
  * limitations under the License.
  */
 
-#import <Carbon/Carbon.h>
-#include <unistd.h>
+#ifndef _REMOUNT_SERVICE_H_
+#define _REMOUNT_SERVICE_H_
 
-#include "adb.h"
+#include <string>
 
-void get_my_path(char *s, size_t maxLen)
-{
-    CFBundleRef mainBundle = CFBundleGetMainBundle();
-    CFURLRef executableURL = CFBundleCopyExecutableURL(mainBundle);
-    CFStringRef executablePathString = CFURLCopyFileSystemPath(executableURL, kCFURLPOSIXPathStyle);
-    CFRelease(executableURL);
+int make_block_device_writable(const std::string&);
+void remount_service(int, void*);
 
-    CFStringGetFileSystemRepresentation(executablePathString, s, maxLen);
-    CFRelease(executablePathString);
-}
-
+#endif
