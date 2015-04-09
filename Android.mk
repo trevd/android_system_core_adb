@@ -27,7 +27,7 @@ LIBADB_SRC_FILES := \
     transport_usb.cpp \
 
 LIBADB_CFLAGS := \
-    -Wall -Wno-error \
+    -Wall -Werror \
     -Wno-unused-parameter \
     -Wno-missing-field-initializers \
     -fvisibility=hidden \
@@ -41,7 +41,6 @@ LIBADB_linux_SRC_FILES := \
     fdevent.cpp \
     get_my_path_linux.cpp \
     usb_linux.cpp \
-    adb_extended.cpp \
 
 LIBADB_windows_SRC_FILES := \
     get_my_path_windows.cpp \
@@ -143,9 +142,10 @@ LOCAL_SRC_FILES := \
     adb_client.cpp \
     services.cpp \
     file_sync_client.cpp \
+    adb_extended.cpp \
 
 LOCAL_CFLAGS += \
-    -Wall -Wno-error \
+    -Wall -Werror \
     -Wno-unused-parameter \
     -D_GNU_SOURCE \
     -DADB_HOST=1 \
@@ -162,7 +162,6 @@ ifeq ($(USE_SYSDEPS_WIN32),)
     LOCAL_STATIC_LIBRARIES += libcutils
 endif
 
-LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 include $(BUILD_HOST_EXECUTABLE)
 
 $(call dist-for-goals,dist_files sdk,$(LOCAL_BUILT_MODULE))
@@ -192,7 +191,7 @@ LOCAL_SRC_FILES := \
 LOCAL_CFLAGS := \
     -DADB_HOST=0 \
     -D_GNU_SOURCE \
-    -Wall -Wno-error \
+    -Wall -Werror \
     -Wno-unused-parameter \
     -Wno-deprecated-declarations \
 
@@ -221,7 +220,5 @@ LOCAL_STATIC_LIBRARIES := \
     libmincrypt \
     libselinux \
     libext4_utils_static \
-
-LOCAL_ADDITIONAL_DEPENDENCIES := $(LOCAL_PATH)/Android.mk
 
 include $(BUILD_EXECUTABLE)

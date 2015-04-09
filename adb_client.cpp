@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define TRACE_TAG TRACE_CLIENT
+#define TRACE_TAG TRACE_ADB
 
 #include "sysdeps.h"
 #include "adb_client.h"
@@ -40,19 +40,16 @@ void adb_set_transport(transport_type type, const char* serial)
 {
     __adb_transport = type;
     __adb_serial = serial;
-    D("__adb_transport=%d __adb_serial=%s\n",__adb_transport, __adb_serial);
 }
 
 void adb_set_tcp_specifics(int server_port)
 {
     __adb_server_port = server_port;
-    D("__adb_server_port=%d\n",__adb_server_port);
 }
 
 void adb_set_tcp_name(const char* hostname)
 {
     __adb_server_name = hostname;
-    D("__adb_server_name=%s\n",__adb_server_name);
 }
 
 int  adb_get_emulator_console_port(void)

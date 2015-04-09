@@ -36,8 +36,6 @@ extern "C" {
  */
 typedef enum {
     TRACE_ADB = 0,   /* 0x001 */
-    TRACE_CLIENT,   /* 0x001 */
-    TRACE_CMD,   /* 0x001 */
     TRACE_SOCKETS,
     TRACE_PACKETS,
     TRACE_TRANSPORT,
@@ -49,7 +47,6 @@ typedef enum {
     TRACE_SERVICES,
     TRACE_AUTH,
     TRACE_FDEVENT,
-    TRACE_EXT,
 } AdbTrace;
 
 #if ADB_TRACE

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define TRACE_TAG TRACE_CMD
+#define TRACE_TAG TRACE_ADB
 
 #include "sysdeps.h"
 
@@ -40,7 +40,9 @@
 #include "adb_client.h"
 #include "adb_io.h"
 #include "file_sync_service.h"
-int adb_extended_commandline(int argc ,const char **argv);
+#if ADB_HOST
+#include "adb_extended.h"
+#endif
 static int do_cmd(transport_type ttype, const char* serial, const char *cmd, ...);
 
 int find_sync_dirs(const char *srcarg,
@@ -256,29 +258,25 @@ void stdin_raw_restore(int fd);
 }
 
 #else
-static struct termios tio_save;
+static termios g_saved_terminal_state;
 
-static void stdin_raw_init(int fd)
-{
-    struct termios tio;
+static void stdin_raw_init(int fd) {
+    if (tcgetattr(fd, &g_saved_terminal_state)) return;
 
-    if(tcgetattr(fd, &tio)) return;
-    if(tcgetattr(fd, &tio_save)) return;
+    termios tio;
+    if (tcgetattr(fd, &tio)) return;
 
-    tio.c_lflag = 0; /* disable CANON, ECHO*, etc */
+    cfmakeraw(&tio);
 
-        /* no timeout but request at least one character per read */
+    // No timeout but request at least one character per read.
     tio.c_cc[VTIME] = 0;
     tio.c_cc[VMIN] = 1;
 
-    tcsetattr(fd, TCSANOW, &tio);
-    tcflush(fd, TCIFLUSH);
+    tcsetattr(fd, TCSAFLUSH, &tio);
 }
 
-static void stdin_raw_restore(int fd)
-{
-    tcsetattr(fd, TCSANOW, &tio_save);
-    tcflush(fd, TCIFLUSH);
+static void stdin_raw_restore(int fd) {
+    tcsetattr(fd, TCSAFLUSH, &g_saved_terminal_state);
 }
 #endif
 
@@ -1179,7 +1177,6 @@ int adb_commandline(int argc, const char **argv)
             return usage();
         }
     }
-D("");
 
     /* modifiers and flags */
     while (argc > 0) {
@@ -1267,7 +1264,7 @@ D("");
 
     adb_set_transport(ttype, serial);
     adb_set_tcp_specifics(server_port);
-    D("is_server=%d\n",is_server);
+
     if (is_server) {
         if (no_daemon || is_daemon) {
             r = adb_main(is_daemon, server_port);
@@ -1283,7 +1280,9 @@ D("");
     if (argc == 0) {
         return usage();
     }
-
+#if ADB_HOST
+    adb_extended_maybe_expand_args(&argc,&argv);
+#endif
     /* handle wait-for-* prefix */
     if (!strncmp(argv[0], "wait-for-", strlen("wait-for-"))) {
         const char* service = argv[0];
@@ -1734,10 +1733,8 @@ D("");
         version(stdout);
         return 0;
     }
-    if ( !adb_extended_commandline(argc,argv)){
-        usage();
-    }
 
+    usage();
     return 1;
 }
 

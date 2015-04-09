@@ -147,8 +147,6 @@ void adb_trace_init() {
         { "1", 0 },
         { "all", 0 },
         { "adb", TRACE_ADB },
-        { "client", TRACE_CLIENT },
-        { "cmd", TRACE_CMD },
         { "sockets", TRACE_SOCKETS },
         { "packets", TRACE_PACKETS },
         { "rwx", TRACE_RWX },
@@ -159,7 +157,6 @@ void adb_trace_init() {
         { "jdwp", TRACE_JDWP },
         { "services", TRACE_SERVICES },
         { "auth", TRACE_AUTH },
-        { "ext", TRACE_EXT },
         { NULL, 0 }
     };
 
