@@ -1,7 +1,19 @@
 /*
+ * Copyright (C) 2015 Trevor Drake
  *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 
 #ifndef __ADB_EXTENDED_H__
 #define __ADB_EXTENDED_H__ 1
@@ -57,14 +69,24 @@ static struct keyword_shell_info_t {
     [ KS_UNKNOWN ] = { "unknown", 0, { NULL }},
     [ KS_S ] = { "s", 1, { "shell" }},
 #endif // ifndef __MAKE_KEYWORD_ENUM__
+    KEYWORD_SHELL(am,"am")
+    KEYWORD_SHELL(pm,"pm")
+    KEYWORD_SHELL(svc,"svc")
     KEYWORD_SHELL(l,"ls","-Zl")
+    KEYWORD_SHELL(ll,"ls","-l")
     KEYWORD_SHELL(lz,"ls","-Z")
     KEYWORD_SHELL(pz,"ps","-Z")
     KEYWORD_SHELL(mnt,"mount")
+    KEYWORD_SHELL(umnt,"umount")
     KEYWORD_SHELL(gp,"getprop")
     KEYWORD_SHELL(grp,"getprop | grep")
     KEYWORD_SHELL(sp,"setprop")
+    KEYWORD_SHELL(kmsg,"cat","/proc/last_kmsg")
+    KEYWORD_SHELL(lkmsg,"cat","/proc/last_kmsg;", "| less")
     KEYWORD_SHELL(c,"cat")
+    KEYWORD_SHELL(dmsg,"dmesg")
+    KEYWORD_ADB(unins,"uninstall")
+    KEYWORD_ADB(ins,"install")
     KEYWORD_ADB(pl,"pull")
     KEYWORD_ADB(pu,"push")
     KEYWORD_ADB(d,"devices","-l")
@@ -85,8 +107,7 @@ static struct keyword_shell_info_t {
     KEYWORD_ADB(rbt,"reboot")
     KEYWORD_ADB(bl,"reboot","bootloader")
     KEYWORD_ADB(rec,"reboot","recovery")
-    KEYWORD_ADB(sl,"reboot","sideload")
-    KEYWORD_ADB(slauto,"reboot","sideload-auto-reboot")
+    KEYWORD_ADB(sl,"sideload")
 #ifndef __MAKE_KEYWORD_STRUCT__
     KEYWORD_SHELL_COUNT
 #endif

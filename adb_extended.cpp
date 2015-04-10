@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2015 Trevor Drake
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #define TRACE_TAG TRACE_ADB
 
 #include "sysdeps.h"
@@ -5,10 +21,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "adb_trace.h"
 #include "adb_extended.h"
 
 static int adb_extended_maybe_expand_shell_command(int *argc ,const char ***argv)
 {
+	return 0;
+}
+static int adb_extended_maybe_expand_input(int *argc ,const char ***argv)
+{
+	for ( int i = 0 ; i < (*argc) ; i ++ ){
+		D("argv[%d]=%s\n",i,(*argv)[i]);
+	}
+
+	if(strncmp("tw",(*argv)[0],PATH_MAX) == 0){
+
+	}
 	return 0;
 }
 static int adb_extended_maybe_expand_keyword(int *argc ,const char ***argv)
@@ -64,6 +92,7 @@ static int adb_extended_maybe_expand_keyword(int *argc ,const char ***argv)
 					argv_index++ ;
 				}
 			}
+			D("old_argc=%d new_argc=%d\n",(*argc),new_argc);
 			(*argv)= (const char**)new_argv;
 			(*argc)= new_argc;
 			return 1;
@@ -77,7 +106,11 @@ int adb_extended_maybe_expand_args(int *argc ,const char ***argv)
 	if ( ( argc == 0 ) || ( argv == NULL ) || ( (*argv) == NULL ) || ( (*argv)[0] == NULL ) ){
 		return -1;
 	}
-	int expanded = adb_extended_maybe_expand_keyword(argc,argv) ;
+	int expanded = adb_extended_maybe_expand_input(argc,argv) ;
+	if ( expanded == 1 ){
+		return expanded;
+	}
+	expanded = adb_extended_maybe_expand_keyword(argc,argv) ;
 	if ( expanded == 1 ){
 		return expanded;
 	}
